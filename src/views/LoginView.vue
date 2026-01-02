@@ -12,6 +12,7 @@
                   label="Username"
                   prepend-icon="mdi-account"
                   type="text"
+                  variant="outlined"
                   :error-messages="errors.username"
                   required
                   @keyup.enter="handleLogin"
@@ -21,6 +22,7 @@
                   label="Password"
                   prepend-icon="mdi-lock"
                   type="password"
+                  variant="outlined"
                   :error-messages="errors.password"
                   required
                   @keyup.enter="handleLogin"
@@ -56,10 +58,12 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useTheme } from 'vuetify';
 import { authService } from '@/services/authService';
+import { useDataStore } from '@/stores';
 import type { LoginCredentials } from '@/types';
 
 const router = useRouter();
 const theme = useTheme();
+const dataStore = useDataStore();
 const loading = ref(false);
 const errorMessage = ref('');
 const credentials = ref<LoginCredentials>({
@@ -106,7 +110,12 @@ const handleLogin = async () => {
 
   try {
     await authService.login(credentials.value);
-    router.push({ name: 'home' });
+    
+    // Initialize WebSocket and fetch initial data
+    dataStore.initWebSocket();
+    await dataStore.fetchAll();
+    
+    router.push({ name: 'dashboard' });
   } catch (error) {
     errorMessage.value = 'Login failed. Please check your credentials.';
   } finally {

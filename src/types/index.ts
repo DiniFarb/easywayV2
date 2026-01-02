@@ -1,4 +1,4 @@
-export interface Person {
+export interface User {
   _id: string;
   username: string;
   password: string;
@@ -8,6 +8,24 @@ export interface Person {
   __v: number;
 }
 
+export interface PersonEntry {
+  _id: string;
+  person: Person;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface Person {
+  birthdate: string;
+  city: string;
+  comments: string;
+  emergency_phone: string;
+  firstname: string;
+  gender: string;
+  lastname: string;
+  phone: string;
+}
 export interface EventEntry {
   _id: string;
   event: Event;
@@ -17,7 +35,7 @@ export interface EventEntry {
 }
 
 export interface Event {
-name: string;
+  name: string;
   eventDate: string;
   place: string;
   comments: string;
@@ -31,6 +49,6 @@ export interface LoginCredentials {
 
 export interface LoginResponse {
   accessToken: string;
-  user: Person[];
+  user: User[];
   expiresAt: number;
 }

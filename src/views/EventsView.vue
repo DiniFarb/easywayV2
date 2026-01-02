@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-row v-if="!initialLoading">
-      <v-col cols="12" md="8">
+      <v-col cols="12" md="6">
         <v-text-field
           v-model="searchQuery"
           label="Search events..."
@@ -21,6 +21,15 @@
           density="comfortable"
           hide-details
         />
+      </v-col>
+      <v-col cols="12" md="2">
+        <v-btn
+          color="primary"
+          prepend-icon="mdi-plus"
+          @click="$router.push({ name: 'event-add' })"
+        >
+          Add New
+        </v-btn>
       </v-col>
     </v-row>
 
@@ -46,11 +55,17 @@
         md="6"
         lg="4"
       >
-        <v-card class="event-card" elevation="2">
+        <v-card 
+          class="event-card" 
+          elevation="2"
+          hover
+          @click="$router.push({ name: 'event-edit', params: { id: eventEntry._id } })"
+          style="cursor: pointer"
+        >
           <v-card-title class="text-h5">
             {{ eventEntry.event.name }}
           </v-card-title>
-          <v-card-text>
+          <v-card-text class="bg-surface-light pt-4">
             <div class="mb-2">
               <v-icon class="mr-2" size="small">mdi-calendar</v-icon>
               <span>{{ formatDate(eventEntry.event.eventDate) }}</span>
@@ -61,7 +76,13 @@
             </div>
             <div class="mb-2">
               <v-icon class="mr-2" size="small">mdi-account-group</v-icon>
-              <span>{{ eventEntry.event.participants.length }} Participants</span>
+              <v-chip 
+                :color="eventEntry.event.participants.length > 0 ? 'primary' : 'error'" 
+                size="small" 
+                variant="flat"
+              >
+                {{ eventEntry.event.participants.length }}
+              </v-chip>
             </div>
             <div v-if="eventEntry.event.comments" class="mt-3">
               <v-divider class="mb-2" />
@@ -75,15 +96,9 @@
 
     <v-row v-if="hasMore && !initialLoading" class="mt-4">
       <v-col cols="12" class="text-center">
-        <v-btn
-          v-if="!loadingMore"
-          color="primary"
-          @click="loadMore"
-        >
-          Load More
-        </v-btn>
+        <div ref="infiniteScrollTrigger" style="height: 1px;"></div>
         <v-progress-circular
-          v-else
+          v-if="loadingMore"
           indeterminate
           color="primary"
           size="48"
@@ -103,8 +118,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useDataStore } from '@/stores';
+import { websocketService } from '@/services/websocketService';
 
 const dataStore = useDataStore();
 const itemsPerPage = 12;
@@ -113,6 +129,8 @@ const initialLoading = ref(true);
 const loadingMore = ref(false);
 const searchQuery = ref('');
 const sortBy = ref('date-desc');
+const infiniteScrollTrigger = ref<HTMLElement | null>(null);
+let observer: IntersectionObserver | null = null;
 
 const sortOptions = [
   { title: 'Date (Newest First)', value: 'date-desc' },
@@ -181,6 +199,8 @@ const formatDate = (dateString: string) => {
 };
 
 const loadMore = () => {
+  if (loadingMore.value || !hasMore.value) return;
+  
   loadingMore.value = true;
   setTimeout(() => {
     currentPage.value++;
@@ -188,16 +208,58 @@ const loadMore = () => {
   }, 300);
 };
 
+const setupInfiniteScroll = () => {
+  if (!infiniteScrollTrigger.value) return;
+  
+  observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting && !loadingMore.value && hasMore.value) {
+        loadMore();
+      }
+    },
+    { threshold: 0.1 }
+  );
+  
+  observer.observe(infiniteScrollTrigger.value);
+};
+
 // Reset pagination when search or sort changes
 watch([searchQuery, sortBy], () => {
   currentPage.value = 1;
 });
+
+const handleEventUpdate = async () => {
+  // Refresh events when an event is updated or added
+  await dataStore.fetchEvents();
+};
+
+const handleEventDelete = async () => {
+  // Refresh events when an event is deleted
+  await dataStore.fetchEvents();
+};
 
 onMounted(async () => {
   if (dataStore.events.length === 0) {
     await dataStore.fetchEvents();
   }
   initialLoading.value = false;
+  
+  // Setup infinite scroll after initial load
+  setTimeout(() => setupInfiniteScroll(), 100);
+  
+  // Setup WebSocket listeners for real-time updates
+  websocketService.on('event:updated', handleEventUpdate);
+  websocketService.on('event:deleted', handleEventDelete);
+});
+
+onUnmounted(() => {
+  if (observer) {
+    observer.disconnect();
+  }
+  
+  // Remove WebSocket listeners
+  websocketService.off('event:updated', handleEventUpdate);
+  websocketService.off('event:deleted', handleEventDelete);
 });
 </script>
 
@@ -206,5 +268,10 @@ onMounted(async () => {
   height: 100%;
   display: flex;
   flex-direction: column;
+  transition: border-color 0.2s ease;
+}
+
+.event-card:hover {
+  border: 2px solid rgb(var(--v-theme-primary)) !important;
 }
 </style>
