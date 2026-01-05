@@ -46,7 +46,7 @@
                 <div class="text-h3">{{ filteredPersonsCount }}</div>
                 <div class="text-subtitle-1 text-medium-emphasis">
                   <v-icon class="mr-2" size="small">mdi-account-group</v-icon>
-                  Persons
+                  Visits
                 </div>
               </v-col>
               <v-col cols="12" md="6" class="text-center">
@@ -268,21 +268,7 @@ const filteredEventsCount = computed(() => {
 // Count persons that participate in filtered events
 const filteredPersonsCount = computed(() => {
   const filteredEvents = getFilteredEvents();
-  
-  // If no filters applied, return total count
-  if (selectedYears.value.length === 0 && selectedEventNames.value.length === 0) {
-    return dataStore.personsCount;
-  }
-  
-  // Collect unique participant IDs from filtered events
-  const participantIds = new Set<string>();
-  filteredEvents.forEach(eventEntry => {
-    eventEntry.event.participants.forEach(participantId => {
-      participantIds.add(participantId);
-    });
-  });
-  
-  return participantIds.size;
+  return filteredEvents.reduce((a,c) => a += c.event.participants.length, 0);
 });
 
 // Calculate gender distribution from filtered persons
