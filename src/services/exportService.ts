@@ -1,7 +1,5 @@
+import { API_BASE_URL } from '@/config';
 import { authService } from './authService';
-
-//const API_BASE_URL = 'https://wolfy.r2v.ch';
-const API_BASE_URL = 'http://localhost:3000';
 
 export const exportService = {
   async exportPersons(eventTypes: string[]): Promise<void> {

@@ -1,7 +1,6 @@
+import { API_BASE_URL } from '@/config';
 import type { LoginCredentials, LoginResponse, User } from '@/types';
 
-//const API_URL = 'https://wolfy.r2v.ch/login';
-const API_URL = 'http://localhost:3000/login';
 const TOKEN_KEY = 'jwt_token';
 const EXPIRES_AT_KEY = 'token_expires_at';
 const USER_KEY = 'user_data';
@@ -9,7 +8,7 @@ const USER_KEY = 'user_data';
 export const authService = {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch(API_BASE_URL+"/login", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
