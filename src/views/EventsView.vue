@@ -65,7 +65,7 @@
           <v-card-title class="text-h5">
             {{ eventEntry.event.name }}
           </v-card-title>
-          <v-card-text class="bg-surface-light pt-4">
+          <v-card-text class="pt-4">
             <div class="mb-2">
               <v-icon class="mr-2" size="small">mdi-calendar</v-icon>
               <span>{{ formatDate(eventEntry.event.eventDate) }}</span>
@@ -269,6 +269,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   transition: border-color 0.2s ease;
+  background: linear-gradient(135deg, rgb(var(--v-theme-surface)) 0%, rgba(var(--v-theme-primary), 0.15) 100%);
 }
 
 .event-card:hover {

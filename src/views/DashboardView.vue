@@ -85,7 +85,7 @@
               <div class="text-h6 text-center mb-4">Average Visitors per Week</div>
               <v-row>
                 <v-col cols="12" class="d-flex justify-center">
-                  <svg :width="800" :height="400" viewBox="0 0 800 400" style="max-width: 100%; height: auto;">
+                  <svg :width="800" :height="400" viewBox="0 0 800 400" style="width: 90%; height: auto; max-width: 100%;">
                     <!-- Grid lines -->
                     <g>
                       <line v-for="i in 5" :key="'grid-' + i"
@@ -122,7 +122,7 @@
                       
                       <!-- Data points -->
                       <circle v-for="(week, index) in weeklyStats" :key="'point-' + index"
-                        :cx="60 + index * pointSpacing + pointSpacing / 2"
+                        :cx="80 + index * pointSpacing"
                         :cy="330 - (week.visitors / (maxWeeklyVisitors || 1)) * 280"
                         r="5"
                         fill="#d12662"
@@ -131,9 +131,9 @@
                       
                       <!-- Data labels (visitor count) -->
                       <text v-for="(week, index) in weeklyStats" :key="'label-' + index"
-                        :x="60 + index * pointSpacing + pointSpacing / 2"
+                        :x="80 + index * pointSpacing"
                         :y="320 - (week.visitors / (maxWeeklyVisitors || 1)) * 280"
-                        text-anchor="middle" font-size="12" font-weight="bold" fill="#333">
+                        text-anchor="middle" font-size="12" font-weight="bold" style="fill: rgb(var(--v-theme-on-surface))">
                         {{ week.visitors }}
                       </text>
                     </g>
@@ -144,13 +144,13 @@
                     <!-- X-axis labels -->
                     <g>
                       <text v-for="(week, index) in weeklyStats" :key="'x-label-' + index"
-                        :x="60 + index * pointSpacing + pointSpacing / 2"
+                        :x="80 + index * pointSpacing"
                         y="350"
                         text-anchor="middle" font-size="11" fill="#666">
-                        W{{ week.weekNumber }}
+                        {{ week.weekRange || `W${week.weekNumber}` }}
                       </text>
                       <text v-for="(week, index) in weeklyStats" :key="'x-year-' + index"
-                        :x="60 + index * pointSpacing + pointSpacing / 2"
+                        :x="80 + index * pointSpacing"
                         y="365"
                         text-anchor="middle" font-size="9" fill="#999">
                         {{ week.year }}
@@ -532,7 +532,7 @@ const genderSlices = computed(() => {
 });
 
 // Calculate weekly statistics
-const weeklyStats = computed(() => {
+const weeklyStats = computed<Array<{ weekNumber: number; year: number; visitors: number; weekRange?: string }>>(() => {
   const filteredEvents = getFilteredEvents();
   if (filteredEvents.length === 0) return [];
   
@@ -554,11 +554,37 @@ const weeklyStats = computed(() => {
   });
   
   // Convert to array and sort by year and week
-  return Array.from(weekMap.values())
+  const allWeeks = Array.from(weekMap.values())
     .sort((a, b) => {
       if (a.year !== b.year) return a.year - b.year;
       return a.weekNumber - b.weekNumber;
     });
+  
+  // If we have more than ~21 weeks, group them together
+  const maxPoints = 21;
+  if (allWeeks.length <= maxPoints) {
+    return allWeeks;
+  }
+  
+  // Calculate how many weeks to group together
+  const groupSize = Math.ceil(allWeeks.length / maxPoints);
+  const groupedWeeks: Array<{ weekNumber: number; year: number; visitors: number; weekRange?: string }> = [];
+  
+  for (let i = 0; i < allWeeks.length; i += groupSize) {
+    const group = allWeeks.slice(i, i + groupSize);
+    const totalVisitors = group.reduce((sum, w) => sum + w.visitors, 0);
+    const firstWeek = group[0];
+    const lastWeek = group[group.length - 1];
+    
+    groupedWeeks.push({
+      weekNumber: firstWeek.weekNumber,
+      year: firstWeek.year,
+      visitors: totalVisitors,
+      weekRange: group.length > 1 ? `W${firstWeek.weekNumber}-${lastWeek.weekNumber}` : undefined
+    });
+  }
+  
+  return groupedWeeks;
 });
 
 // Helper function to get ISO week number
@@ -577,8 +603,8 @@ const maxWeeklyVisitors = computed(() => {
 
 const pointSpacing = computed(() => {
   const numWeeks = weeklyStats.value.length;
-  if (numWeeks === 0) return 0;
-  return Math.min(700 / (numWeeks - 1 || 1), 100);
+  if (numWeeks <= 1) return 0;
+  return 660 / (numWeeks - 1); // 740 - 80 = 660 for padding
 });
 
 // Generate line path for the chart
@@ -589,7 +615,7 @@ const linePath = computed(() => {
   const spacing = pointSpacing.value;
   
   return weeklyStats.value.map((week, index) => {
-    const x = 60 + index * spacing + spacing / 2;
+    const x = 80 + index * spacing;
     const y = 330 - (week.visitors / maxVisitors) * 280;
     return index === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
   }).join(' ');
@@ -603,14 +629,14 @@ const lineAreaPath = computed(() => {
   const spacing = pointSpacing.value;
   
   const linePart = weeklyStats.value.map((week, index) => {
-    const x = 60 + index * spacing + spacing / 2;
+    const x = 80 + index * spacing;
     const y = 330 - (week.visitors / maxVisitors) * 280;
     return index === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
   }).join(' ');
   
   // Close the path to the baseline
-  const lastX = 60 + (weeklyStats.value.length - 1) * spacing + spacing / 2;
-  const firstX = 60 + spacing / 2;
+  const lastX = 80 + (weeklyStats.value.length - 1) * spacing;
+  const firstX = 80;
   
   return `${linePart} L ${lastX} 330 L ${firstX} 330 Z`;
 });

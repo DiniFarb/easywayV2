@@ -20,7 +20,9 @@ const handleLogout = () => {
 };
 
 const toggleTheme = () => {
-  theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark';
+  const newTheme = theme.global.current.value.dark ? 'light' : 'dark';
+  theme.global.name.value = newTheme;
+  localStorage.setItem('theme', newTheme);
 };
 
 const navigateTo = (routeName: string) => {
@@ -28,7 +30,28 @@ const navigateTo = (routeName: string) => {
   drawer.value = false;
 };
 
+const currentPageTitle = computed(() => {
+  const routeNameMap: { [key: string]: string } = {
+    'dashboard': 'Dashboard',
+    'events': 'Events',
+    'calendar': 'Calendar',
+    'persons': 'Persons',
+    'person-add': 'Add Person',
+    'person-edit': 'Edit Person',
+    'event-add': 'Add Event',
+    'event-edit': 'Edit Event'
+  };
+  
+  return routeNameMap[route.name as string] || 'Easyway';
+});
+
 onMounted(() => {
+  // Load theme preference from localStorage
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'light' || savedTheme === 'dark') {
+    theme.global.name.value = savedTheme;
+  }
+  
   if (isAuthenticated.value) {
     dataStore.initWebSocket();
   }
@@ -95,7 +118,7 @@ onUnmounted(() => {
     >
       <v-app-bar-nav-icon variant="text" @click="drawer = !drawer"></v-app-bar-nav-icon>
 
-      <v-toolbar-title>Easyway</v-toolbar-title>
+      <v-toolbar-title>{{ currentPageTitle }}</v-toolbar-title>
 
       <v-spacer></v-spacer>
 

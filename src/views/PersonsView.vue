@@ -149,7 +149,7 @@
           <v-card-title class="text-h10">
             {{ personEntry.person.firstname }} {{ personEntry.person.lastname }}
           </v-card-title>
-          <v-card-text class="bg-surface-light pt-4">
+          <v-card-text class="pt-4">
             <div class="mb-2">
               <v-icon class="mr-2" size="small">mdi-cake-variant</v-icon>
               <span v-if="personEntry.person.birthdate">{{ formatDate(personEntry.person.birthdate) }} ({{ calculateAge(personEntry.person.birthdate) }}y)</span>
@@ -214,7 +214,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useDataStore } from '@/stores';
 import { apiService } from '@/services/apiService';
 import { exportService } from '@/services/exportService';
@@ -370,18 +370,26 @@ const loadMore = () => {
 };
 
 const setupInfiniteScroll = () => {
-  if (!infiniteScrollTrigger.value) return;
+  // Disconnect existing observer if any
+  if (observer) {
+    observer.disconnect();
+  }
   
-  observer = new IntersectionObserver(
-    (entries) => {
-      if (entries[0].isIntersecting && !loadingMore.value && hasMore.value) {
-        loadMore();
-      }
-    },
-    { threshold: 0.1 }
-  );
-  
-  observer.observe(infiniteScrollTrigger.value);
+  // Wait for next tick to ensure element is rendered
+  nextTick(() => {
+    if (!infiniteScrollTrigger.value) return;
+    
+    observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loadingMore.value && hasMore.value) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    
+    observer.observe(infiniteScrollTrigger.value);
+  });
 };
 
 const handleExport = async () => {
@@ -403,6 +411,8 @@ const handleExport = async () => {
 // Reset pagination when search or sort changes
 watch([searchQuery, sortBy, hideDummies], () => {
   currentPage.value = 1;
+  // Re-setup infinite scroll after content changes
+  nextTick(() => setupInfiniteScroll());
 });
 
 const handlePersonUpdate = async () => {
@@ -437,7 +447,7 @@ onMounted(async () => {
   }
   
   // Setup infinite scroll after initial load
-  setTimeout(() => setupInfiniteScroll(), 100);
+  setupInfiniteScroll();
   
   // Setup WebSocket listeners for real-time updates
   websocketService.on('person:updated', handlePersonUpdate);
@@ -463,6 +473,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   transition: border-color 0.2s ease;
+  background: linear-gradient(135deg, rgb(var(--v-theme-surface)) 0%, rgba(var(--v-theme-primary), 0.15) 100%);
 }
 
 .person-card:hover {
