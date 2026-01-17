@@ -76,13 +76,122 @@
       </v-col>
     </v-row>
 
+    <!-- Average Visitors per Week Chart -->
+    <v-row class="mt-4">
+      <v-col cols="12">
+        <v-card>
+          <v-card-text>
+            <div v-if="!dataStore.loading && !dataStore.error && weeklyStats.length > 0">
+              <div class="text-h6 text-center mb-4">Average Visitors per Week</div>
+              <v-row>
+                <v-col cols="12" class="d-flex justify-center">
+                  <svg :width="800" :height="400" viewBox="0 0 800 400" style="max-width: 100%; height: auto;">
+                    <!-- Grid lines -->
+                    <g>
+                      <line v-for="i in 5" :key="'grid-' + i"
+                        :x1="60" :x2="760"
+                        :y1="50 + (i - 1) * 70" :y2="50 + (i - 1) * 70"
+                        stroke="#e0e0e0" stroke-width="1" />
+                    </g>
+                    
+                    <!-- Y-axis labels -->
+                    <g>
+                      <text v-for="i in 5" :key="'y-label-' + i"
+                        :x="50" :y="54 + (5 - i) * 70"
+                        text-anchor="end" font-size="12" fill="#666">
+                        {{ Math.round(maxWeeklyVisitors * (i - 1) / 4) }}
+                      </text>
+                    </g>
+                    
+                    <!-- Line Chart -->
+                    <g>
+                      <!-- Area under the line -->
+                      <path
+                        :d="lineAreaPath"
+                        fill="#d12662"
+                        opacity="0.2" />
+                      
+                      <!-- Line -->
+                      <path
+                        :d="linePath"
+                        fill="none"
+                        stroke="#d12662"
+                        stroke-width="3"
+                        stroke-linecap="round"
+                        stroke-linejoin="round" />
+                      
+                      <!-- Data points -->
+                      <circle v-for="(week, index) in weeklyStats" :key="'point-' + index"
+                        :cx="60 + index * pointSpacing + pointSpacing / 2"
+                        :cy="330 - (week.visitors / (maxWeeklyVisitors || 1)) * 280"
+                        r="5"
+                        fill="#d12662"
+                        stroke="white"
+                        stroke-width="2" />
+                      
+                      <!-- Data labels (visitor count) -->
+                      <text v-for="(week, index) in weeklyStats" :key="'label-' + index"
+                        :x="60 + index * pointSpacing + pointSpacing / 2"
+                        :y="320 - (week.visitors / (maxWeeklyVisitors || 1)) * 280"
+                        text-anchor="middle" font-size="12" font-weight="bold" fill="#333">
+                        {{ week.visitors }}
+                      </text>
+                    </g>
+                    
+                    <!-- X-axis -->
+                    <line x1="60" y1="330" x2="760" y2="330" stroke="#333" stroke-width="2" />
+                    
+                    <!-- X-axis labels -->
+                    <g>
+                      <text v-for="(week, index) in weeklyStats" :key="'x-label-' + index"
+                        :x="60 + index * pointSpacing + pointSpacing / 2"
+                        y="350"
+                        text-anchor="middle" font-size="11" fill="#666">
+                        W{{ week.weekNumber }}
+                      </text>
+                      <text v-for="(week, index) in weeklyStats" :key="'x-year-' + index"
+                        :x="60 + index * pointSpacing + pointSpacing / 2"
+                        y="365"
+                        text-anchor="middle" font-size="9" fill="#999">
+                        {{ week.year }}
+                      </text>
+                    </g>
+                    
+                    <!-- Y-axis -->
+                    <line x1="60" y1="50" x2="60" y2="330" stroke="#333" stroke-width="2" />
+                    
+                    <!-- Axis labels -->
+                    <text x="400" y="390" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">
+                      Week
+                    </text>
+                    <text x="20" y="190" text-anchor="middle" font-size="14" font-weight="bold" fill="#333"
+                      transform="rotate(-90, 20, 190)">
+                      Visitors
+                    </text>
+                  </svg>
+                </v-col>
+              </v-row>
+              <div class="text-center mt-4">
+                <v-chip color="primary" variant="outlined">
+                  Average: {{ averageVisitorsPerWeek }} visitors/week
+                </v-chip>
+              </div>
+            </div>
+            <div v-else-if="!dataStore.loading && weeklyStats.length === 0" class="text-center text-medium-emphasis">
+              No data to display
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
     <!-- Gender Distribution Card -->
     <v-row class="mt-4">
       <v-col cols="12" md="6">
         <v-card>
           <v-card-text>
             <div v-if="!dataStore.loading && !dataStore.error && filteredPersonsCount > 0">
-              <div class="text-h6 text-center mb-4">Gender Distribution</div>
+              <div class="text-h6 text-center mb-4">Gender Pie</div>
               <v-row>
                 <v-col cols="12" md="6" class="d-flex justify-center">
                   <svg :width="300" :height="300" viewBox="0 0 300 300">
@@ -326,6 +435,18 @@ const genderStats = computed(() => {
 const placeStats = computed(() => {
   const filteredEvents = getFilteredEvents();
   
+  // Define allowed cities
+  const allowedCities = [
+    "Langendorf",
+    "Oberdorf",
+    "Bellach",
+    "Rüttenen",
+    "Solothurn",
+    "Bettlach",
+    "Selzach",
+    "Lommiswil"
+  ];
+  
   // Collect unique participant IDs from filtered events
   const participantIds = new Set<string>();
   filteredEvents.forEach(eventEntry => {
@@ -336,12 +457,25 @@ const placeStats = computed(() => {
   
   // Count cities from participants
   const cityCounts: { [key: string]: number } = {};
+  let andereCount = 0;
+  
   dataStore.persons.forEach(personEntry => {
     if (participantIds.has(personEntry._id)) {
       const city = personEntry.person.city || 'Unknown';
-      cityCounts[city] = (cityCounts[city] || 0) + 1;
+      
+      // Check if city is in the allowed list
+      if (allowedCities.includes(city)) {
+        cityCounts[city] = (cityCounts[city] || 0) + 1;
+      } else {
+        andereCount++;
+      }
     }
   });
+  
+  // Add "Andere" category if there are other cities
+  if (andereCount > 0) {
+    cityCounts['Andere'] = andereCount;
+  }
   
   const total = Object.values(cityCounts).reduce((sum, count) => sum + count, 0);
   if (total === 0) return [];
@@ -397,6 +531,104 @@ const genderSlices = computed(() => {
   });
 });
 
+// Calculate weekly statistics
+const weeklyStats = computed(() => {
+  const filteredEvents = getFilteredEvents();
+  if (filteredEvents.length === 0) return [];
+  
+  // Group events by week
+  const weekMap = new Map<string, { weekNumber: number; year: number; visitors: number }>();
+  
+  filteredEvents.forEach(eventEntry => {
+    const eventDate = new Date(eventEntry.event.eventDate);
+    const year = eventDate.getFullYear();
+    const weekNumber = getWeekNumber(eventDate);
+    const weekKey = `${year}-W${weekNumber}`;
+    
+    if (!weekMap.has(weekKey)) {
+      weekMap.set(weekKey, { weekNumber, year, visitors: 0 });
+    }
+    
+    const week = weekMap.get(weekKey)!;
+    week.visitors += eventEntry.event.participants.length;
+  });
+  
+  // Convert to array and sort by year and week
+  return Array.from(weekMap.values())
+    .sort((a, b) => {
+      if (a.year !== b.year) return a.year - b.year;
+      return a.weekNumber - b.weekNumber;
+    });
+});
+
+// Helper function to get ISO week number
+const getWeekNumber = (date: Date): number => {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+};
+
+const maxWeeklyVisitors = computed(() => {
+  if (weeklyStats.value.length === 0) return 0;
+  return Math.max(...weeklyStats.value.map(w => w.visitors));
+});
+
+const pointSpacing = computed(() => {
+  const numWeeks = weeklyStats.value.length;
+  if (numWeeks === 0) return 0;
+  return Math.min(700 / (numWeeks - 1 || 1), 100);
+});
+
+// Generate line path for the chart
+const linePath = computed(() => {
+  if (weeklyStats.value.length === 0) return '';
+  
+  const maxVisitors = maxWeeklyVisitors.value || 1;
+  const spacing = pointSpacing.value;
+  
+  return weeklyStats.value.map((week, index) => {
+    const x = 60 + index * spacing + spacing / 2;
+    const y = 330 - (week.visitors / maxVisitors) * 280;
+    return index === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
+  }).join(' ');
+});
+
+// Generate area path (filled area under the line)
+const lineAreaPath = computed(() => {
+  if (weeklyStats.value.length === 0) return '';
+  
+  const maxVisitors = maxWeeklyVisitors.value || 1;
+  const spacing = pointSpacing.value;
+  
+  const linePart = weeklyStats.value.map((week, index) => {
+    const x = 60 + index * spacing + spacing / 2;
+    const y = 330 - (week.visitors / maxVisitors) * 280;
+    return index === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
+  }).join(' ');
+  
+  // Close the path to the baseline
+  const lastX = 60 + (weeklyStats.value.length - 1) * spacing + spacing / 2;
+  const firstX = 60 + spacing / 2;
+  
+  return `${linePart} L ${lastX} 330 L ${firstX} 330 Z`;
+});
+
+const barWidth = computed(() => {
+  const numWeeks = weeklyStats.value.length;
+  if (numWeeks === 0) return 0;
+  return Math.min(700 / numWeeks, 60);
+});
+
+const barPadding = computed(() => barWidth.value * 0.1);
+
+const averageVisitorsPerWeek = computed(() => {
+  if (weeklyStats.value.length === 0) return 0;
+  const total = weeklyStats.value.reduce((sum, week) => sum + week.visitors, 0);
+  return (total / weeklyStats.value.length).toFixed(1);
+});
+
 // Create pie chart slices for places
 const placeSlices = computed(() => {
   const stats = placeStats.value;
@@ -435,10 +667,9 @@ const placeSlices = computed(() => {
 
 onMounted(async () => {
   await dataStore.fetchAll();
-  // Select only the current year by default
-  const currentYear = new Date().getFullYear();
-  selectedYears.value = availableYears.value.includes(currentYear) ? [currentYear] : [];
-  selectedEventNames.value = [...availableEventNames.value];
+  // Initially, no year or event name is selected
+  selectedYears.value = [];
+  selectedEventNames.value = [];
 });
 
 // Watch for year changes and update selectedEventNames to only include available ones

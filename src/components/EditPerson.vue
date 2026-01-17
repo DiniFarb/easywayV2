@@ -125,7 +125,7 @@
                                 size="small"
                                 variant="text"
                                 color="error"
-                                @click="removeFromEvent(event.id)"
+                                @click="promptRemoveFromEvent(event.id)"
                               />
                             </td>
                           </tr>
@@ -251,6 +251,36 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Remove from Event Confirmation Dialog -->
+    <v-dialog v-model="removeEventDialog" max-width="400">
+      <v-card>
+        <v-card-title class="text-h6 bg-warning">
+          <v-icon class="mr-2">mdi-alert</v-icon>
+          Remove from Event
+        </v-card-title>
+        <v-card-text class="pt-4">
+          Are you sure you want to remove this person from the event?
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="grey"
+            variant="text"
+            @click="removeEventDialog = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="error"
+            variant="elevated"
+            @click="confirmRemoveFromEvent"
+          >
+            Remove
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -270,6 +300,8 @@ const dataStore = useDataStore();
 const formValid = ref(false);
 const loading = ref(false);
 const deleteDialog = ref(false);
+const removeEventDialog = ref(false);
+const eventToRemove = ref<string | null>(null);
 const eventSearch = ref('');
 const isUpdatingFromWebSocket = ref(false);
 const snackbar = ref({
@@ -369,6 +401,19 @@ const addToEvent = async (eventId: string) => {
     console.error('Error adding person to event:', error);
     showSnackbar('Failed to add to event', 'error');
   }
+};
+
+const promptRemoveFromEvent = (eventId: string) => {
+  eventToRemove.value = eventId;
+  removeEventDialog.value = true;
+};
+
+const confirmRemoveFromEvent = async () => {
+  if (eventToRemove.value) {
+    await removeFromEvent(eventToRemove.value);
+    eventToRemove.value = null;
+  }
+  removeEventDialog.value = false;
 };
 
 const removeFromEvent = async (eventId: string) => {

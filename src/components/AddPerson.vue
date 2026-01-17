@@ -8,6 +8,34 @@
             Add New Person
           </v-card-title>
           <v-card-text>
+            <!-- Duplicate Warning -->
+            <v-alert
+              v-if="duplicatePerson"
+              type="warning"
+              variant="tonal"
+              class="mb-4"
+              density="compact"
+            >
+              <div class="d-flex align-center justify-space-between">
+                <div>
+                  <strong>Possible Duplicate:</strong> A person with the same name and birthdate already exists:
+                  <strong>{{ duplicatePerson.person.firstname }} {{ duplicatePerson.person.lastname }}</strong>
+                  ({{ formatDate(duplicatePerson.person.birthdate) }})
+                </div>
+                <v-btn
+                  color="warning"
+                  variant="elevated"
+                  size="small"
+                  prepend-icon="mdi-open-in-new"
+                  :href="getDuplicatePersonLink()"
+                  target="_blank"
+                  class="ml-4"
+                >
+                  View Person
+                </v-btn>
+              </div>
+            </v-alert>
+            
             <v-form v-model="formValid" @submit.prevent="handleSubmit">
               <v-row>
                 <v-col cols="12" md="6">
@@ -130,11 +158,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { apiService } from '@/services/apiService';
 import { useDataStore } from '@/stores';
-import type { Person } from '@/types';
+import type { Person, PersonEntry } from '@/types';
 
 const router = useRouter();
 const dataStore = useDataStore();
@@ -166,6 +194,78 @@ const genderOptions = [
 
 const rules = {
   required: (value: string) => !!value || 'This field is required'
+};
+
+// Duplicate person detection
+const duplicatePerson = ref<PersonEntry | null>(null);
+
+const normalizeDateForComparison = (dateString: string) => {
+  if (!dateString) return '';
+  // Extract just the YYYY-MM-DD part
+  return dateString.split('T')[0];
+};
+
+const checkForDuplicate = () => {
+  // Only check if we have all three fields
+  if (!form.value.firstname || !form.value.lastname || !form.value.birthdate) {
+    duplicatePerson.value = null;
+    return;
+  }
+
+  const firstnameLower = form.value.firstname.toLowerCase();
+  const lastnameLower = form.value.lastname.toLowerCase();
+  const birthdate = form.value.birthdate;
+
+  console.log('Checking for duplicate:', { firstnameLower, lastnameLower, birthdate });
+  console.log('Persons in store:', dataStore.persons.length);
+
+  // Search in the data store for matching person
+  const match = dataStore.persons.find(personEntry => {
+    const storedBirthdate = normalizeDateForComparison(personEntry.person.birthdate);
+    const matches = (
+      personEntry.person.firstname.toLowerCase() === firstnameLower &&
+      personEntry.person.lastname.toLowerCase() === lastnameLower &&
+      storedBirthdate === birthdate
+    );
+    
+    if (matches) {
+      console.log('Found duplicate:', personEntry);
+    }
+    
+    return matches;
+  });
+
+  duplicatePerson.value = match || null;
+  
+  if (match) {
+    console.log('Duplicate person found:', match);
+  } else {
+    console.log('No duplicate found');
+  }
+};
+
+// Watch for changes in firstname, lastname, and birthdate
+watch(
+  () => [form.value.firstname, form.value.lastname, form.value.birthdate],
+  () => {
+    checkForDuplicate();
+  },
+  { deep: true }
+);
+
+const formatDate = (dateString: string | undefined) => {
+  if (!dateString) return '';
+  try {
+    return new Date(dateString).toLocaleDateString('de-DE');
+  } catch {
+    return '';
+  }
+};
+
+const getDuplicatePersonLink = () => {
+  if (!duplicatePerson.value) return '#';
+  const baseUrl = window.location.origin;
+  return `${baseUrl}/person/edit/${duplicatePerson.value._id}`;
 };
 
 const showSnackbar = (text: string, color: 'success' | 'error' = 'success') => {
@@ -215,6 +315,13 @@ const handleSubmit = async () => {
 const handleBack = () => {
   router.push({ name: 'persons' });
 };
+
+onMounted(async () => {
+  // Ensure persons data is loaded for duplicate checking
+  if (dataStore.persons.length === 0) {
+    await dataStore.fetchPersons();
+  }
+});
 </script>
 
 <style scoped>
