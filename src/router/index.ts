@@ -5,6 +5,7 @@ import DashboardView from '@/views/DashboardView.vue';
 import EventsView from '@/views/EventsView.vue';
 import PersonsView from '@/views/PersonsView.vue';
 import CalendarView from '@/views/CalendarView.vue';
+import ActivityView from '@/views/ActivityView.vue';
 import AddPerson from '@/components/AddPerson.vue';
 import EditPerson from '@/components/EditPerson.vue';
 import AddEvent from '@/components/AddEvent.vue';
@@ -36,6 +37,12 @@ const router = createRouter({
       name: 'calendar',
       component: CalendarView,
       meta: { requiresAuth: true },
+    },
+    {
+      path: '/activity',
+      name: 'activity',
+      component: ActivityView,
+      meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
       path: '/persons',
@@ -73,9 +80,12 @@ const router = createRouter({
 // Navigation guard
 router.beforeEach((to, from, next) => {
   const isAuthenticated = authService.isAuthenticated();
+  const user = authService.getUser();
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     next({ name: 'login' });
+  } else if (to.meta.requiresAdmin && user?.role !== 'Admin') {
+    next({ name: 'dashboard' });
   } else if (to.name === 'login' && isAuthenticated) {
     next({ name: 'dashboard' });
   } else {

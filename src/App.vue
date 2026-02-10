@@ -12,6 +12,10 @@ const dataStore = useDataStore();
 const drawer = ref(false);
 const isAuthenticated = computed(() => authService.isAuthenticated());
 const isLoginPage = computed(() => route.name === 'login');
+const isAdmin = computed(() => {
+  const user = authService.getUser();
+  return user?.role === 'Admin';
+});
 
 const handleLogout = () => {
   dataStore.cleanupWebSocket();
@@ -35,6 +39,7 @@ const currentPageTitle = computed(() => {
     'dashboard': 'Dashboard',
     'events': 'Events',
     'calendar': 'Calendar',
+    'activity': 'Activity Log',
     'persons': 'Persons',
     'person-add': 'Add Person',
     'person-edit': 'Edit Person',
@@ -97,6 +102,14 @@ onUnmounted(() => {
           :active="route.name === 'persons'"
           color="primary"
           @click="navigateTo('persons')"
+        />
+        <v-list-item
+          prepend-icon="mdi-history"
+          title="Activity"
+          v-if="isAdmin"
+          :active="route.name === 'activity'"
+          color="primary"
+          @click="navigateTo('activity')"
         />
       </v-list>
       <template #append>

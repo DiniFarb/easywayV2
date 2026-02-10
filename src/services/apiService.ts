@@ -1,4 +1,4 @@
-import type { EventEntry, PersonEntry, Person, Event } from '@/types';
+import type { EventEntry, PersonEntry, Person, Event, ActivityLogEntry } from '@/types';
 import { authService } from './authService';
 import { API_BASE_URL } from '@/config';
 
@@ -37,6 +37,10 @@ export const apiService = {
 
   async getEvents(): Promise<EventEntry[]> {
     return fetchCollection<EventEntry[]>('events');
+  },
+
+  async getActivityLog(): Promise<ActivityLogEntry[]> {
+    return fetchCollection<ActivityLogEntry[]>('activity_log');
   },
 
   async getConstants(): Promise<{ event_types: string[] }> {

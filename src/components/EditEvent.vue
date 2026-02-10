@@ -254,6 +254,66 @@
       </v-card>
     </v-dialog>
 
+    <v-dialog v-model="eventTypeChangeDialog" max-width="500">
+      <v-card>
+        <v-card-title class="text-h5" color="warning">
+          <v-icon class="mr-2" color="warning">mdi-alert</v-icon>
+          Confirm Event Type Change
+        </v-card-title>
+        <v-card-text class="pt-4">
+          You are changing the event type from <strong>{{ originalEventType }}</strong> to <strong>{{ form.name }}</strong>. Are you sure you want to continue?
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="grey"
+            variant="text"
+            @click="cancelEventTypeChange"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="warning"
+            variant="elevated"
+            :loading="loading"
+            @click="confirmEventTypeChange"
+          >
+            Confirm
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="eventTypeChangeDialog" max-width="500">
+      <v-card>
+        <v-card-title class="text-h5" color="warning">
+          <v-icon class="mr-2" color="warning">mdi-alert</v-icon>
+          Confirm Event Type Change
+        </v-card-title>
+        <v-card-text class="pt-4">
+          You are changing the event type from <strong>{{ originalEventType }}</strong> to <strong>{{ form.name }}</strong>. Are you sure you want to continue?
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="grey"
+            variant="text"
+            @click="cancelEventTypeChange"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="warning"
+            variant="elevated"
+            :loading="loading"
+            @click="confirmEventTypeChange"
+          >
+            Confirm
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <!-- Add Person Dialog -->
     <v-dialog v-model="addPersonDialog" max-width="800" persistent>
       <v-card>
@@ -421,6 +481,7 @@ const dataStore = useDataStore();
 const formValid = ref(false);
 const loading = ref(false);
 const deleteDialog = ref(false);
+const eventTypeChangeDialog = ref(false);
 const removeParticipantDialog = ref(false);
 const participantToRemove = ref<string | null>(null);
 const personSearch = ref('');
@@ -432,6 +493,8 @@ const addPersonDialog = ref(false);
 const addDummyDialog = ref(false);
 const personFormValid = ref(false);
 const addingPerson = ref(false);
+const originalEventType = ref('');
+const isRevertingEventType = ref(false);
 const snackbar = ref({
   show: false,
   text: '',
@@ -670,6 +733,24 @@ const handleSave = async () => {
   }
 };
 
+const cancelEventTypeChange = () => {
+  // Revert to original event type
+  isRevertingEventType.value = true;
+  form.value.name = originalEventType.value;
+  eventTypeChangeDialog.value = false;
+  // Reset flag after Vue's next tick
+  setTimeout(() => {
+    isRevertingEventType.value = false;
+  }, 100);
+};
+
+const confirmEventTypeChange = async () => {
+  eventTypeChangeDialog.value = false;
+  // Update original event type to new value
+  originalEventType.value = form.value.name;
+  // Auto-save will trigger automatically from existing watcher
+};
+
 const handleBack = async () => {
   // Save before leaving if form is valid
   if (formValid.value) {
@@ -714,7 +795,17 @@ const confirmDelete = async () => {
 };
 
 // Watch form fields for auto-save
-watch(() => form.value.name, autoSave);
+watch(() => form.value.name, (newValue) => {
+  // If we're reverting, don't trigger anything
+  if (isRevertingEventType.value || isUpdatingFromWebSocket.value) return;
+  
+  // Check if event type changed from original
+  if (newValue !== originalEventType.value) {
+    eventTypeChangeDialog.value = true;
+  } else {
+    autoSave();
+  }
+});
 watch(() => form.value.eventDate, autoSave);
 watch(() => form.value.place, autoSave);
 watch(() => form.value.comments, autoSave);
@@ -740,6 +831,9 @@ const handleEventUpdate = (eventEntry: EventEntry) => {
     form.value.place = serverData.place;
     form.value.comments = serverData.comments;
     form.value.participants = [...serverData.participants];
+    
+    // Update original event type as well
+    originalEventType.value = serverData.name;
     
     // Reset flag after a short delay
     setTimeout(() => {
@@ -807,6 +901,7 @@ onMounted(async () => {
       ...existingEvent.event,
       eventDate: formatDateForInput(existingEvent.event.eventDate)
     };
+    originalEventType.value = existingEvent.event.name;
   } else {
     // If event not found in store, fetch all data
     await dataStore.fetchEvents();
@@ -816,6 +911,7 @@ onMounted(async () => {
         ...event.event,
         eventDate: formatDateForInput(event.event.eventDate)
       };
+      originalEventType.value = event.event.name;
     }
   }
   

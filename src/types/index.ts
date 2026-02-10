@@ -47,6 +47,19 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface ActivityLogEntry {
+  _id: string;
+  type: string;
+  doc_id: string;
+  activity: string;
+  dump_old: string;
+  dump_new: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  [key: string]: any;
+}
+
 export interface LoginResponse {
   accessToken: string;
   user: User[];
