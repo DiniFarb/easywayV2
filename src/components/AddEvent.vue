@@ -147,12 +147,12 @@ const handleSubmit = async () => {
       // Navigate to edit mode with the new event ID
       setTimeout(() => {
         router.push({ name: 'event-edit', params: { id: resp.newID } });
-      }, 1000);
+      }, 500);
     } else {
       // Fallback to events view if event not found
       setTimeout(() => {
         router.push({ name: 'events' });
-      }, 1500);
+      }, 800);
     }
     
   } catch (error) {

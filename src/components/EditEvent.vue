@@ -3,9 +3,18 @@
     <v-row>
       <v-col cols="12">
         <v-card>
-          <v-card-title color="primary">
+          <v-card-title class="d-flex align-center" color="primary">
             <v-icon class="mr-2">mdi-calendar</v-icon>
             Edit Event
+            <v-spacer />
+            <v-btn
+              color="grey"
+              variant="outlined"
+              prepend-icon="mdi-arrow-left"
+              @click="handleBack"
+            >
+              Back
+            </v-btn>
           </v-card-title>
           <v-card-text>
             <v-form v-model="formValid" @submit.prevent="handleSave">
@@ -31,6 +40,7 @@
                     :rules="[rules.required]"
                     variant="outlined"
                     required
+                    @blur="autoSave"
                   />
                 </v-col>
                 <v-col cols="12" md="6">
@@ -40,6 +50,7 @@
                     :rules="[rules.required]"
                     variant="outlined"
                     required
+                    @blur="autoSave"
                   />
                 </v-col>
               </v-row>
@@ -186,12 +197,14 @@
                     label="Comments"
                     variant="outlined"
                     rows="3"
+                    @blur="autoSave"
                   />
                 </v-col>
               </v-row>
             </v-form>
           </v-card-text>
           <v-card-actions>
+            <v-spacer />
             <v-btn
               v-if="isAdmin"
               color="error"
@@ -201,15 +214,6 @@
               @click="handleDelete"
             >
               Delete
-            </v-btn>
-            <v-spacer />
-            <v-btn
-              color="grey"
-              variant="outlined"
-              prepend-icon="mdi-arrow-left"
-              @click="handleBack"
-            >
-              Back
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -354,23 +358,31 @@
                 />
               </v-col>
               <v-col cols="12" md="6">
-                <v-select
-                  v-model="personForm.gender"
-                  :items="genderOptions"
-                  label="Gender"
-                  variant="outlined"
-                />
-              </v-col>
-            </v-row>
-            
-            <v-row>
-              <v-col cols="12" md="6">
                 <v-text-field
                   v-model="personForm.city"
                   label="City"
                   variant="outlined"
                 />
               </v-col>
+            </v-row>
+            
+            <v-row>
+              <v-col cols="12" class="d-flex justify-center my-4">
+                <v-btn-toggle
+                  v-model="personForm.gender"
+                  color="primary"
+                  mandatory
+                  divided
+                  variant="outlined"
+                >
+                  <v-btn value="M" icon="mdi-gender-male" size="x-large" class="px-6" title="Male"></v-btn>
+                  <v-btn value="W" icon="mdi-gender-female" size="x-large" class="px-6" title="Female"></v-btn>
+                  <v-btn value="O" icon="mdi-gender-male-female" size="x-large" class="px-6" title="Other"></v-btn>
+                </v-btn-toggle>
+              </v-col>
+            </v-row>
+            
+            <v-row>
               <v-col cols="12" md="6">
                 <v-text-field
                   v-model="personForm.phone"
@@ -378,10 +390,7 @@
                   variant="outlined"
                 />
               </v-col>
-            </v-row>
-            
-            <v-row>
-              <v-col cols="12">
+              <v-col cols="12" md="6">
                 <v-text-field
                   v-model="personForm.emergency_phone"
                   label="Emergency Phone"
@@ -782,7 +791,7 @@ const confirmDelete = async () => {
     // Navigate back to events view
     setTimeout(() => {
       router.push({ name: 'events' });
-    }, 1000);
+    }, 500);
     
   } catch (error) {
     console.error('Error deleting event:', error);
@@ -795,6 +804,8 @@ const confirmDelete = async () => {
 };
 
 // Watch form fields for auto-save
+// Removed watchers for text fields to prevent auto-save on every keystroke
+// Kept name watcher as it handles special logic for event type changes (dropdown selection is discrete action)
 watch(() => form.value.name, (newValue) => {
   // If we're reverting, don't trigger anything
   if (isRevertingEventType.value || isUpdatingFromWebSocket.value) return;
@@ -806,9 +817,8 @@ watch(() => form.value.name, (newValue) => {
     autoSave();
   }
 });
-watch(() => form.value.eventDate, autoSave);
-watch(() => form.value.place, autoSave);
-watch(() => form.value.comments, autoSave);
+
+// Watch participants changes (this happens via button clicks, not keystrokes, so immediate save is appropriate)
 watch(() => form.value.participants, autoSave, { deep: true });
 
 const handleEventUpdate = (eventEntry: EventEntry) => {
@@ -848,7 +858,7 @@ const handleEventDelete = (eventEntry: EventEntry) => {
     showSnackbar('Event was deleted by another user', 'error');
     setTimeout(() => {
       router.push({ name: 'events' });
-    }, 1500);
+    }, 800);
   }
 };
 

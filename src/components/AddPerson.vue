@@ -64,24 +64,9 @@
                     v-model="form.birthdate"
                     label="Birthdate"
                     type="date"
-                    :rules="[rules.required]"
                     variant="outlined"
-                    required
                   />
                 </v-col>
-                <v-col cols="12" md="6">
-                  <v-select
-                    v-model="form.gender"
-                    :items="genderOptions"
-                    label="Gender"
-                    :rules="[rules.required]"
-                    variant="outlined"
-                    required
-                  />
-                </v-col>
-              </v-row>
-              
-              <v-row>
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.city"
@@ -91,6 +76,25 @@
                     required
                   />
                 </v-col>
+              </v-row>
+
+              <v-row>
+                <v-col cols="12" class="d-flex justify-center my-4">
+                  <v-btn-toggle
+                    v-model="form.gender"
+                    color="primary"
+                    mandatory
+                    divided
+                    variant="outlined"
+                  >
+                    <v-btn value="M" icon="mdi-gender-male" size="x-large" class="px-6" title="Male"></v-btn>
+                    <v-btn value="W" icon="mdi-gender-female" size="x-large" class="px-6" title="Female"></v-btn>
+                    <v-btn value="O" icon="mdi-gender-male-female" size="x-large" class="px-6" title="Other"></v-btn>
+                  </v-btn-toggle>
+                </v-col>
+              </v-row>
+              
+              <v-row>
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.phone"
@@ -98,10 +102,7 @@
                     variant="outlined"
                   />
                 </v-col>
-              </v-row>
-              
-              <v-row>
-                <v-col cols="12">
+                <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.emergency_phone"
                     label="Emergency Phone"
@@ -293,12 +294,12 @@ const handleSubmit = async () => {
       // Navigate to edit mode with the new person ID
       setTimeout(() => {
         router.push({ name: 'person-edit', params: { id: resp.newID } });
-      }, 1000);
+      }, 500);
     } else {
       // Fallback to persons view if person not found
       setTimeout(() => {
         router.push({ name: 'persons' });
-      }, 1500);
+      }, 800);
     }
     
   } catch (error) {

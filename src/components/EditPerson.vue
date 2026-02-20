@@ -3,9 +3,18 @@
     <v-row>
       <v-col cols="12">
         <v-card>
-          <v-card-title color="primary">
+          <v-card-title class="d-flex align-center" color="primary">
             <v-icon class="mr-2">mdi-account</v-icon>
             Edit Person
+            <v-spacer />
+            <v-btn
+              color="grey"
+              variant="outlined"
+              prepend-icon="mdi-arrow-left"
+              @click="handleBack"
+            >
+              Back
+            </v-btn>
           </v-card-title>
           <v-card-text>
             <v-form v-model="formValid" @submit.prevent="handleSave">
@@ -17,6 +26,7 @@
                     :rules="[rules.required]"
                     variant="outlined"
                     required
+                    @blur="autoSave"
                   />
                 </v-col>
                 <v-col cols="12" md="6">
@@ -26,6 +36,7 @@
                     :rules="[rules.required]"
                     variant="outlined"
                     required
+                    @blur="autoSave"
                   />
                 </v-col>
               </v-row>
@@ -36,24 +47,10 @@
                     v-model="form.birthdate"
                     label="Birthdate"
                     type="date"
-                    :rules="[rules.required]"
                     variant="outlined"
-                    required
+                    @blur="autoSave"
                   />
                 </v-col>
-                <v-col cols="12" md="6">
-                  <v-select
-                    v-model="form.gender"
-                    :items="genderOptions"
-                    label="Gender"
-                    :rules="[rules.required]"
-                    variant="outlined"
-                    required
-                  />
-                </v-col>
-              </v-row>
-              
-              <v-row>
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.city"
@@ -61,23 +58,43 @@
                     :rules="[rules.required]"
                     variant="outlined"
                     required
+                    @blur="autoSave"
                   />
                 </v-col>
+              </v-row>
+
+              <v-row>
+                <v-col cols="12" class="d-flex justify-center my-4">
+                  <v-btn-toggle
+                    v-model="form.gender"
+                    color="primary"
+                    mandatory
+                    divided
+                    variant="outlined"
+                    @update:model-value="autoSave"
+                  >
+                    <v-btn value="M" icon="mdi-gender-male" size="x-large" class="px-6" title="Male"></v-btn>
+                    <v-btn value="W" icon="mdi-gender-female" size="x-large" class="px-6" title="Female"></v-btn>
+                    <v-btn value="O" icon="mdi-gender-male-female" size="x-large" class="px-6" title="Other"></v-btn>
+                  </v-btn-toggle>
+                </v-col>
+              </v-row>
+              
+              <v-row>
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.phone"
                     label="Phone"
                     variant="outlined"
+                    @blur="autoSave"
                   />
                 </v-col>
-              </v-row>
-              
-              <v-row>
-                <v-col cols="12">
+                <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.emergency_phone"
                     label="Emergency Phone"
                     variant="outlined"
+                    @blur="autoSave"
                   />
                 </v-col>
               </v-row>
@@ -89,6 +106,7 @@
                     label="Comments"
                     variant="outlined"
                     rows="3"
+                    @blur="autoSave"
                   />
                 </v-col>
               </v-row>
@@ -190,6 +208,7 @@
             </v-form>
           </v-card-text>
           <v-card-actions>
+            <v-spacer />
             <v-btn
               v-if="isAdmin"
               color="error"
@@ -199,15 +218,6 @@
               @click="handleDelete"
             >
               Delete
-            </v-btn>
-            <v-spacer />
-            <v-btn
-              color="grey"
-              variant="outlined"
-              prepend-icon="mdi-arrow-left"
-              @click="handleBack"
-            >
-              Back
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -520,7 +530,7 @@ const confirmDelete = async () => {
     // Navigate back to persons view
     setTimeout(() => {
       router.push({ name: 'persons' });
-    }, 1000);
+    }, 500);
     
   } catch (error) {
     console.error('Error deleting person:', error);
@@ -533,14 +543,9 @@ const confirmDelete = async () => {
 };
 
 // Watch form fields for auto-save
-watch(() => form.value.firstname, autoSave);
-watch(() => form.value.lastname, autoSave);
-watch(() => form.value.birthdate, autoSave);
-watch(() => form.value.gender, autoSave);
-watch(() => form.value.city, autoSave);
-watch(() => form.value.phone, autoSave);
-watch(() => form.value.emergency_phone, autoSave);
-watch(() => form.value.comments, autoSave);
+// Removed watchers to prevent auto-save on every keystroke
+// Auto-save is now triggered by @blur events on input fields
+
 
 const handlePersonUpdate = (personEntry: PersonEntry) => {
   // Only update if this is the person we're currently editing
@@ -571,7 +576,7 @@ const handlePersonDelete = (personEntry: PersonEntry) => {
     showSnackbar('Person was deleted by another user', 'error');
     setTimeout(() => {
       router.push({ name: 'persons' });
-    }, 1500);
+    }, 800);
   }
 };
 

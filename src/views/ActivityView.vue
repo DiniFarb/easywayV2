@@ -27,8 +27,9 @@
           @load="loadMore"
         >
           <template v-for="item in visibleActivities" :key="item._id">
-            <div class="py-2 px-4 border-b font-mono text-body-2 hover-bg">
+            <div @click="openDetails(item)" class="py-2 px-4 border-b font-mono text-body-2 hover-bg">
               <span>{{ formatTime(item.createdAt) }}</span>
+              <span class="ml-2">{{ item.user }}</span>
               <span class="ml-2">{{ getTypeEmoji(item.type) }}</span>
               <span class="ml-2">{{ item.activity }}</span>
               <span 
