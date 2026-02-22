@@ -3,9 +3,15 @@
     <v-row>
       <v-col cols="12">
         <v-card>
-          <v-card-title color="primary">
+          <v-card-title class="d-flex align-center" color="primary">
             <v-icon class="mr-2">mdi-calendar</v-icon>
             Add New Event
+            <v-spacer />
+            <v-btn
+              variant="text"
+              icon="mdi-close"
+              @click="handleBack"
+            />
           </v-card-title>
           <v-card-text>
             <v-form v-model="formValid" @submit.prevent="handleSubmit">
@@ -58,14 +64,6 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer />
-            <v-btn
-              color="grey"
-              variant="outlined"
-              prepend-icon="mdi-arrow-left"
-              @click="handleBack"
-            >
-              Back
-            </v-btn>
             <v-btn
               color="primary"
               variant="elevated"

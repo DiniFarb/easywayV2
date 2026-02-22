@@ -4,6 +4,12 @@
       <v-card-title class="d-flex align-center">
         <v-icon class="mr-2">mdi-account-multiple-plus</v-icon>
         Add Dummy Participants
+        <v-spacer />
+        <v-btn
+          variant="text"
+          icon="mdi-close"
+          @click="handleCancel"
+        />
       </v-card-title>
       <v-card-text>
         <v-form v-model="formValid" @submit.prevent="handleAdd">
@@ -22,15 +28,18 @@
           </v-row>
           
           <v-row>
-            <v-col cols="12">
-              <v-select
+            <v-col cols="12" class="d-flex justify-center my-4">
+              <v-btn-toggle
                 v-model="form.gender"
-                :items="genderOptions"
-                label="Gender"
-                :rules="[rules.required]"
+                color="primary"
+                mandatory
+                divided
                 variant="outlined"
-                required
-              />
+              >
+                <v-btn value="M" icon="mdi-gender-male" size="x-large" class="px-6" title="Male"></v-btn>
+                <v-btn value="W" icon="mdi-gender-female" size="x-large" class="px-6" title="Female"></v-btn>
+                <v-btn value="O" icon="mdi-gender-male-female" size="x-large" class="px-6" title="Other"></v-btn>
+              </v-btn-toggle>
             </v-col>
           </v-row>
           
@@ -76,13 +85,6 @@
       <v-card-actions>
         <v-spacer />
         <v-btn
-          variant="text"
-          @click="handleCancel"
-          :disabled="loading"
-        >
-          Cancel
-        </v-btn>
-        <v-btn
           color="primary"
           variant="flat"
           @click="handleAdd"
@@ -119,17 +121,11 @@ const loading = ref(false);
 
 const form = ref({
   amount: 1,
-  gender: '',
+  gender: 'M',
   age: 18,
   place: '',
   comments: ''
 });
-
-const genderOptions = [
-  { title: 'Male', value: 'M' },
-  { title: 'Female', value: 'W' },
-  { title: 'Other', value: 'O' }
-];
 
 const rules = {
   required: (v: any) => !!v || 'This field is required',
@@ -192,7 +188,7 @@ const handleAdd = async () => {
 const handleCancel = () => {
   form.value = {
     amount: 1,
-    gender: '',
+    gender: 'M',
     age: 18,
     place: '',
     comments: ''

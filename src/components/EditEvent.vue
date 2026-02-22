@@ -8,13 +8,10 @@
             Edit Event
             <v-spacer />
             <v-btn
-              color="grey"
-              variant="outlined"
-              prepend-icon="mdi-arrow-left"
+              variant="text"
+              icon="mdi-close"
               @click="handleBack"
-            >
-              Back
-            </v-btn>
+            />
           </v-card-title>
           <v-card-text>
             <v-form v-model="formValid" @submit.prevent="handleSave">
@@ -132,6 +129,7 @@
                       <span>Available Persons ({{ filteredAvailablePersons.length }})</span>
                       <v-spacer />
                       <v-switch
+                        v-if="isAdmin"
                         v-model="hideAvailableDummies"
                         label="Hide Dummies"
                         color="primary"
@@ -160,7 +158,7 @@
                             <th class="text-left">Name</th>
                             <th class="text-left">Birthday</th>
                             <th class="text-left">Place</th>
-                            <th class="text-left" style="width: 60px;"></th>
+                            <th class="text-right" style="width: 100px;">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -173,13 +171,23 @@
                             <td>{{ person.fullName }}</td>
                             <td>{{ person.birthdate ? formatDate(person.birthdate) : 'N/A' }}</td>
                             <td>{{ person.city || 'N/A' }}</td>
-                            <td>
+                            <td class="text-right text-no-wrap" style="width: 100px;">
+                              <v-btn
+                                icon="mdi-pencil"
+                                size="small"
+                                variant="text"
+                                color="grey-darken-1"
+                                class="mr-1"
+                                @click="editPerson(person.id)"
+                                title="Edit Person"
+                              />
                               <v-btn
                                 icon="mdi-plus-circle"
                                 size="small"
                                 variant="text"
                                 color="primary"
                                 @click="addParticipant(person.id)"
+                                title="Add to Event"
                               />
                             </td>
                           </tr>
@@ -318,120 +326,12 @@
       </v-card>
     </v-dialog>
 
-    <!-- Add Person Dialog -->
     <v-dialog v-model="addPersonDialog" max-width="800" persistent>
-      <v-card>
-        <v-card-title class="text-h5 bg-primary">
-          <v-icon class="mr-2">mdi-account-plus</v-icon>
-          Add New Person
-        </v-card-title>
-        <v-card-text class="pt-4">
-          <v-form v-model="personFormValid">
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="personForm.firstname"
-                  label="First Name"
-                  :rules="[personRules.required]"
-                  variant="outlined"
-                  required
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="personForm.lastname"
-                  label="Last Name"
-                  :rules="[personRules.required]"
-                  variant="outlined"
-                  required
-                />
-              </v-col>
-            </v-row>
-            
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="personForm.birthdate"
-                  label="Birthdate"
-                  type="date"
-                  variant="outlined"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="personForm.city"
-                  label="City"
-                  variant="outlined"
-                />
-              </v-col>
-            </v-row>
-            
-            <v-row>
-              <v-col cols="12" class="d-flex justify-center my-4">
-                <v-btn-toggle
-                  v-model="personForm.gender"
-                  color="primary"
-                  mandatory
-                  divided
-                  variant="outlined"
-                >
-                  <v-btn value="M" icon="mdi-gender-male" size="x-large" class="px-6" title="Male"></v-btn>
-                  <v-btn value="W" icon="mdi-gender-female" size="x-large" class="px-6" title="Female"></v-btn>
-                  <v-btn value="O" icon="mdi-gender-male-female" size="x-large" class="px-6" title="Other"></v-btn>
-                </v-btn-toggle>
-              </v-col>
-            </v-row>
-            
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="personForm.phone"
-                  label="Phone"
-                  variant="outlined"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="personForm.emergency_phone"
-                  label="Emergency Phone"
-                  variant="outlined"
-                />
-              </v-col>
-            </v-row>
-            
-            <v-row>
-              <v-col cols="12">
-                <v-textarea
-                  v-model="personForm.comments"
-                  label="Comments"
-                  variant="outlined"
-                  rows="3"
-                />
-              </v-col>
-            </v-row>
-          </v-form>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            color="grey"
-            variant="outlined"
-            @click="closeAddPersonDialog"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="primary"
-            variant="elevated"
-            prepend-icon="mdi-plus"
-            :disabled="!personFormValid || addingPerson"
-            :loading="addingPerson"
-            @click="handleAddPerson"
-          >
-            Add Person
-          </v-btn>
-        </v-card-actions>
-      </v-card>
+      <AddPerson
+        :is-dialog="true"
+        @person-added="handleNewPersonAdded"
+        @cancel="addPersonDialog = false"
+      />
     </v-dialog>
 
     <!-- Remove Participant Confirmation Dialog -->
@@ -482,6 +382,7 @@ import { useDataStore } from '@/stores';
 import { websocketService } from '@/services/websocketService';
 import type { Event, EventEntry } from '@/types';
 import AddDummy from './AddDummy.vue';
+import AddPerson from './AddPerson.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -500,8 +401,6 @@ const eventTypes = ref<string[]>([]);
 const isUpdatingFromWebSocket = ref(false);
 const addPersonDialog = ref(false);
 const addDummyDialog = ref(false);
-const personFormValid = ref(false);
-const addingPerson = ref(false);
 const originalEventType = ref('');
 const isRevertingEventType = ref(false);
 const snackbar = ref({
@@ -518,28 +417,7 @@ const form = ref<Event>({
   participants: []
 });
 
-const personForm = ref({
-  firstname: '',
-  lastname: '',
-  birthdate: '',
-  gender: '',
-  city: '',
-  phone: '',
-  emergency_phone: '',
-  comments: ''
-});
-
-const genderOptions = [
-  { title: 'Male', value: 'M' },
-  { title: 'Female', value: 'W' },
-  { title: 'Other', value: 'O' }
-];
-
 const rules = {
-  required: (value: string) => !!value || 'This field is required'
-};
-
-const personRules = {
   required: (value: string) => !!value || 'This field is required'
 };
 
@@ -627,10 +505,6 @@ const confirmRemoveParticipant = () => {
   removeParticipantDialog.value = false;
 };
 
-const removeParticipant = (participantId: string) => {
-  form.value.participants = form.value.participants.filter(id => id !== participantId);
-};
-
 const getGenderIcon = (gender: string) => {
   switch (gender?.toLowerCase()) {
     case 'm':
@@ -660,52 +534,14 @@ const showSnackbar = (text: string, color: 'success' | 'error' = 'success') => {
   snackbar.value = { show: true, text, color };
 };
 
-const closeAddPersonDialog = () => {
+const handleNewPersonAdded = (newId: string) => {
   addPersonDialog.value = false;
-  // Reset form
-  personForm.value = {
-    firstname: '',
-    lastname: '',
-    birthdate: '',
-    gender: '',
-    city: '',
-    phone: '',
-    emergency_phone: '',
-    comments: ''
-  };
-};
-
-const handleAddPerson = async () => {
-  if (!personFormValid.value) return;
   
-  addingPerson.value = true;
-  
-  try {
-    // Add person and get the returned person data with ID
-    const result = await apiService.addPerson(personForm.value);
-    showSnackbar('Person created successfully');
-    console.log(result);
-    // Refresh the data store
-    await dataStore.fetchPersons();
-    
-    // Add the new person to the event participants using the returned ID
-    if (result && result.newID) {
-      if (!form.value.participants.includes(result.newID)) {
-        form.value.participants.push(result.newID);
-        showSnackbar('Person added to event');
-      }
+  if (newId) {
+    if (!form.value.participants.includes(newId)) {
+      form.value.participants.push(newId);
+      showSnackbar(`Looks good💩`);
     }
-    
-    closeAddPersonDialog();
-    
-  } catch (error) {
-    console.error('Error creating person:', error);
-    showSnackbar(
-      error instanceof Error ? error.message : 'Failed to create person',
-      'error'
-    );
-  } finally {
-    addingPerson.value = false;
   }
 };
 
@@ -771,6 +607,19 @@ const handleBack = async () => {
     }
   }
   router.push({ name: 'events' });
+};
+
+const editPerson = (personId: string) => {
+  // Save current event state before navigating
+  if (formValid.value) {
+    apiService.updateEvent(eventId.value, form.value).catch(err => console.error(err));
+  }
+  
+  router.push({ 
+    name: 'person-edit', 
+    params: { id: personId },
+    query: { returnTo: 'event-edit', returnId: eventId.value }
+  });
 };
 
 const handleDelete = () => {

@@ -3,9 +3,15 @@
     <v-row>
       <v-col cols="12">
         <v-card>
-          <v-card-title color="primary">
+          <v-card-title class="d-flex align-center" color="primary">
             <v-icon class="mr-2">mdi-account</v-icon>
             Add New Person
+            <v-spacer />
+            <v-btn
+              variant="text"
+              icon="mdi-close"
+              @click="handleBack"
+            />
           </v-card-title>
           <v-card-text>
             <!-- Duplicate Warning -->
@@ -126,14 +132,6 @@
           <v-card-actions>
             <v-spacer />
             <v-btn
-              color="grey"
-              variant="outlined"
-              prepend-icon="mdi-arrow-left"
-              @click="handleBack"
-            >
-              Back
-            </v-btn>
-            <v-btn
               color="primary"
               variant="elevated"
               prepend-icon="mdi-plus"
@@ -159,11 +157,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { apiService } from '@/services/apiService';
 import { useDataStore } from '@/stores';
 import type { Person, PersonEntry } from '@/types';
+
+const props = defineProps<{
+  isDialog?: boolean
+}>();
+
+const emit = defineEmits<{
+  (e: 'person-added', id: string): void
+  (e: 'cancel'): void
+}>();
 
 const router = useRouter();
 const dataStore = useDataStore();
@@ -186,12 +193,6 @@ const form = ref<Person>({
   emergency_phone: '',
   comments: ''
 });
-
-const genderOptions = [
-  { title: 'Male', value: 'M' },
-  { title: 'Female', value: 'W' },
-  { title: 'Other', value: 'O' }
-];
 
 const rules = {
   required: (value: string) => !!value || 'This field is required'
@@ -282,11 +283,19 @@ const handleSubmit = async () => {
 
     const resp = await apiService.addPerson(form.value);
     console.log(resp);
-    showSnackbar('All well💩');
+    showSnackbar(`Looks good💩`);
     
     // Refresh the data store
     await dataStore.fetchPersons();
     
+    // If in dialog mode, emit event and return
+    if (props.isDialog) {
+      if (resp && resp.newID) {
+        emit('person-added', resp.newID);
+      }
+      return;
+    }
+
     // Wait a bit for WebSocket to receive the new person
     await new Promise(resolve => setTimeout(resolve, 500));
     
@@ -314,7 +323,11 @@ const handleSubmit = async () => {
 };
 
 const handleBack = () => {
-  router.push({ name: 'persons' });
+  if (props.isDialog) {
+    emit('cancel');
+  } else {
+    router.push({ name: 'persons' });
+  }
 };
 
 onMounted(async () => {

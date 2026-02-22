@@ -635,7 +635,7 @@ const placeSlices = computed(() => {
 onMounted(async () => {
   await dataStore.fetchAll();
   // Initially, no year or event name is selected
-  selectedYears.value = [];
+  selectedYears.value = [new Date().getFullYear()];
   selectedEventNames.value = [];
 
   try {

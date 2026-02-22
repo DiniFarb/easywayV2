@@ -8,13 +8,10 @@
             Edit Person
             <v-spacer />
             <v-btn
-              color="grey"
-              variant="outlined"
-              prepend-icon="mdi-arrow-left"
+              variant="text"
+              icon="mdi-close"
               @click="handleBack"
-            >
-              Back
-            </v-btn>
+            />
           </v-card-title>
           <v-card-text>
             <v-form v-model="formValid" @submit.prevent="handleSave">
@@ -509,7 +506,16 @@ const handleBack = async () => {
       console.error('Error saving before back:', error);
     }
   }
-  router.push({ name: 'persons' });
+
+  // Check if we should return to a specific view (e.g. event-edit)
+  const returnTo = route.query.returnTo as string;
+  const returnId = route.query.returnId as string;
+  
+  if (returnTo === 'event-edit' && returnId) {
+    router.push({ name: 'event-edit', params: { id: returnId } });
+  } else {
+    router.push({ name: 'persons' });
+  }
 };
 
 const handleDelete = () => {
@@ -522,7 +528,7 @@ const confirmDelete = async () => {
   
   try {
     await apiService.deletePerson(personId.value);
-    showSnackbar('Person deleted successfully');
+    showSnackbar(`Looks good💩`);
     
     // Refresh the data store
     await dataStore.fetchPersons();

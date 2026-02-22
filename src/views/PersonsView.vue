@@ -4,6 +4,7 @@
     <v-row v-if="!initialLoading" align="center" justify="center" class="mb-2">
       <v-col cols="auto">
         <v-switch
+          v-if="isAdmin"
           v-model="hideDummies"
           label="Hide Dummies"
           color="primary"
@@ -217,10 +218,12 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useDataStore } from '@/stores';
 import { apiService } from '@/services/apiService';
+import { authService } from '@/services/authService';
 import { exportService } from '@/services/exportService';
 import { websocketService } from '@/services/websocketService';
 
 const dataStore = useDataStore();
+const isAdmin = computed(() => authService.getUser()?.role === 'Admin');
 const itemsPerPage = 12;
 const currentPage = ref(1);
 const initialLoading = ref(true);
