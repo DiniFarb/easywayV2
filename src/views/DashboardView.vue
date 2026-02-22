@@ -286,10 +286,12 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useDataStore } from '@/stores';
 import { exportService } from '@/services/exportService';
+import { apiService } from '@/services/apiService';
 
 const dataStore = useDataStore();
 const selectedYears = ref<number[]>([]);
 const selectedEventNames = ref<string[]>([]);
+const relevantCities = ref<string[]>([]);
 const isExporting = ref(false);
 
 const handleExport = async () => {
@@ -380,33 +382,27 @@ const filteredPersonsCount = computed(() => {
   return filteredEvents.reduce((a,c) => a += c.event.participants.length, 0);
 });
 
-// Calculate gender distribution from filtered persons
 const genderStats = computed(() => {
-  const filteredEvents = getFilteredEvents();
-  
-  // Collect unique participant IDs from filtered events
-  const participantIds = new Set<string>();
-  filteredEvents.forEach(eventEntry => {
-    eventEntry.event.participants.forEach(participantId => {
-      participantIds.add(participantId);
-    });
-  });
-  
-  // Count genders
   const genderCounts = { M: 0, W: 0, O: 0 };
-  dataStore.persons.forEach(personEntry => {
-    if (participantIds.has(personEntry._id)) {
-      const gender = personEntry.person.gender?.toUpperCase() || 'O';
-      if (gender === 'M' || gender === 'MALE' || gender === 'MÄNNLICH') {
+  const filteredEvents = getFilteredEvents();
+  const gendarMap = dataStore.persons.reduce<Record<string, string>>((a,c)=>{
+      let gen = c.person.gender;
+      if (gen != "M" && gen != "W") {gen = "O";}
+      a[c._id] = gen
+      return a;
+  },{});
+  filteredEvents.forEach(eventEntry => {
+  eventEntry.event.participants.forEach(participantId => {
+      let gen = gendarMap[participantId]
+      if (gen === 'M') {
         genderCounts.M++;
-      } else if (gender === 'W' || gender === 'F' || gender === 'FEMALE' || gender === 'WEIBLICH') {
+      } else if (gen === 'W') {
         genderCounts.W++;
       } else {
         genderCounts.O++;
       }
-    }
-  });
-  
+    });
+  });  
   const total = genderCounts.M + genderCounts.W + genderCounts.O;
   
   return [
@@ -434,49 +430,27 @@ const genderStats = computed(() => {
 // Calculate place distribution from filtered events
 const placeStats = computed(() => {
   const filteredEvents = getFilteredEvents();
-  
-  // Define allowed cities
-  const allowedCities = [
-    "Langendorf",
-    "Oberdorf",
-    "Bellach",
-    "Rüttenen",
-    "Solothurn",
-    "Bettlach",
-    "Selzach",
-    "Lommiswil"
-  ];
-  
-  // Collect unique participant IDs from filtered events
-  const participantIds = new Set<string>();
-  filteredEvents.forEach(eventEntry => {
-    eventEntry.event.participants.forEach(participantId => {
-      participantIds.add(participantId);
-    });
-  });
-  
-  // Count cities from participants
-  const cityCounts: { [key: string]: number } = {};
-  let andereCount = 0;
-  
-  dataStore.persons.forEach(personEntry => {
-    if (participantIds.has(personEntry._id)) {
-      const city = personEntry.person.city || 'Unknown';
-      
-      // Check if city is in the allowed list
-      if (allowedCities.includes(city)) {
-        cityCounts[city] = (cityCounts[city] || 0) + 1;
+  const cityMap = dataStore.persons.reduce<Record<string, string>>((a,c)=>{
+      let city = c.person.city;
+      if (relevantCities.value.includes(city)){
+        a[c._id] = city;
       } else {
-        andereCount++;
+        a[c._id] = "Andere"; 
       }
-    }
-  });
-  
-  // Add "Andere" category if there are other cities
-  if (andereCount > 0) {
-    cityCounts['Andere'] = andereCount;
-  }
-  
+      return a;
+  },{});
+
+  const cityCounts: { [key: string]: number } = {};
+  filteredEvents.forEach(eventEntry => {
+  eventEntry.event.participants.forEach(participantId => {
+      let city = cityMap[participantId]
+      if(cityCounts[city]){
+        cityCounts[city]++;
+      } else {
+        cityCounts[city] = 1;
+      }
+    });
+  });  
   const total = Object.values(cityCounts).reduce((sum, count) => sum + count, 0);
   if (total === 0) return [];
   
@@ -663,6 +637,16 @@ onMounted(async () => {
   // Initially, no year or event name is selected
   selectedYears.value = [];
   selectedEventNames.value = [];
+
+  try {
+    const constants = await apiService.getConstants();
+    if (constants.relevant_cities) {
+      relevantCities.value = constants.relevant_cities
+    }
+  } catch (error) {
+    console.error('Failed to fetch event types:', error);
+  }
+
 });
 
 // Watch for year changes and update selectedEventNames to only include available ones

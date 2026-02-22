@@ -43,7 +43,7 @@ export const apiService = {
     return fetchCollection<ActivityLogEntry[]>('activity_log');
   },
 
-  async getConstants(): Promise<{ event_types: string[] }> {
+  async getConstants(): Promise<{ event_types: string[], relevant_cities: string[] }> {
     const token = authService.getToken();
     
     if (!token) {
