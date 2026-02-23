@@ -18,6 +18,13 @@
         </div>
       </v-card-title>
       
+      <v-card-subtitle class="pb-2">
+        <span class="mr-4">➕ {{ activityCounts['CREATE'] || 0 }}</span>
+        <span class="mr-4">✏️ {{ activityCounts['UPDATE'] || 0 }}</span>
+        <span class="mr-4">🗑️ {{ activityCounts['DELETE'] || 0 }}</span>
+        <span class="mr-4">📝 {{ activityCounts['LOGIN'] || 0 }}</span>
+      </v-card-subtitle>
+      
       <v-divider></v-divider>
 
       <div class="flex-grow-1" style="overflow: hidden; position: relative;">
@@ -51,7 +58,6 @@
 
     <v-dialog v-model="dialog" max-width="900px">
       <v-card>
-        <v-card-title>Activity Details</v-card-title>
         <v-card-text class="pt-4">
           <v-row v-if="isUpdate">
             <v-col cols="12" md="6">
@@ -300,6 +306,19 @@ function openDetails(item: ActivityLogEntry) {
   selectedItem.value = item;
   dialog.value = true;
 }
+
+const activityCounts = computed(() => {
+  const counts: Record<string, number> = {};
+  filteredActivities.value.forEach(item => {
+    const typeUpper = item.type.toUpperCase();
+    if (counts[typeUpper]) {
+      counts[typeUpper]++;
+    } else {
+      counts[typeUpper] = 1;
+    }
+  });
+  return counts;
+});
 
 function formatTime(dateStr: string) {
   return new Date(dateStr).toLocaleString();

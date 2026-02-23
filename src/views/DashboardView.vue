@@ -28,7 +28,7 @@
                 <v-select
                   v-model="selectedEventNames"
                   :items="availableEventNames"
-                  label="Filter by Event Type"
+                  label="Event Typ"
                   multiple
                   chips
                   closable-chips
@@ -46,14 +46,12 @@
                 <div class="text-h3">{{ filteredPersonsCount }}</div>
                 <div class="text-subtitle-1 text-medium-emphasis">
                   <v-icon class="mr-2" size="small">mdi-account-group</v-icon>
-                  Visits
                 </div>
               </v-col>
               <v-col cols="12" md="6" class="text-center">
                 <div class="text-h3">{{ filteredEventsCount }}</div>
                 <div class="text-subtitle-1 text-medium-emphasis">
                   <v-icon class="mr-2" size="small">mdi-calendar</v-icon>
-                  Events
                 </div>
               </v-col>
             </v-row>
@@ -89,104 +87,24 @@
             <div v-if="dataStore.loading" class="d-flex justify-center align-center" style="height: 400px;">
               <v-skeleton-loader type="image" width="100%" height="100%" />
             </div>
+            <div v-else-if="!dataStore.loading && monthlyStats.length > 24" class="text-center text-medium-emphasis">
+              Chli viu, muesi no verbessere 😅
+            </div>
             <div v-else-if="!dataStore.loading && !dataStore.error && monthlyStats.length > 0">
-              <div class="text-h6 text-center mb-4">Average Visitors per Month</div>
+              <div class="text-h6 text-center mb-4">Besucher pro Monat</div>
               <v-row>
                 <v-col cols="12" class="d-flex justify-center">
-                  <svg :width="800" :height="400" viewBox="0 0 800 400" style="width: 90%; height: auto; max-width: 100%;">
-                    <!-- Grid lines -->
-                    <g>
-                      <line v-for="i in 5" :key="'grid-' + i"
-                        :x1="60" :x2="760"
-                        :y1="50 + (i - 1) * 70" :y2="50 + (i - 1) * 70"
-                        stroke="#e0e0e0" stroke-width="1" />
-                    </g>
-                    
-                    <!-- Y-axis labels -->
-                    <g>
-                      <text v-for="i in 5" :key="'y-label-' + i"
-                        :x="50" :y="54 + (5 - i) * 70"
-                        text-anchor="end" font-size="12" fill="#666">
-                        {{ Math.round(maxMonthlyVisitors * (i - 1) / 4) }}
-                      </text>
-                    </g>
-                    
-                    <!-- Line Chart -->
-                    <g>
-                      <!-- Area under the line -->
-                      <path
-                        :d="lineAreaPath"
-                        fill="#d12662"
-                        opacity="0.2" />
-                      
-                      <!-- Line -->
-                      <path
-                        :d="linePath"
-                        fill="none"
-                        stroke="#d12662"
-                        stroke-width="3"
-                        stroke-linecap="round"
-                        stroke-linejoin="round" />
-                      
-                      <!-- Data points -->
-                      <circle v-for="(month, index) in monthlyStats" :key="'point-' + index"
-                        :cx="80 + index * pointSpacing"
-                        :cy="330 - (month.avgVisitors / (maxMonthlyVisitors || 1)) * 280"
-                        r="5"
-                        fill="#d12662"
-                        stroke="white"
-                        stroke-width="2" />
-                      
-                      <!-- Data labels (visitor count) -->
-                      <text v-for="(month, index) in monthlyStats" :key="'label-' + index"
-                        :x="80 + index * pointSpacing"
-                        :y="320 - (month.avgVisitors / (maxMonthlyVisitors || 1)) * 280"
-                        text-anchor="middle" font-size="12" font-weight="bold" style="fill: rgb(var(--v-theme-on-surface))">
-                        {{ month.avgVisitors }}
-                      </text>
-                    </g>
-                    
-                    <!-- X-axis -->
-                    <line x1="60" y1="330" x2="760" y2="330" stroke="#333" stroke-width="2" />
-                    
-                    <!-- X-axis labels -->
-                    <g>
-                      <text v-for="(month, index) in monthlyStats" :key="'x-label-' + index"
-                        :x="80 + index * pointSpacing"
-                        y="350"
-                        text-anchor="middle" font-size="11" fill="#666">
-                        {{ month.monthName }}
-                      </text>
-                      <text v-for="(month, index) in monthlyStats" :key="'x-year-' + index"
-                        :x="80 + index * pointSpacing"
-                        y="365"
-                        text-anchor="middle" font-size="9" fill="#999">
-                        {{ month.year }}
-                      </text>
-                    </g>
-                    
-                    <!-- Y-axis -->
-                    <line x1="60" y1="50" x2="60" y2="330" stroke="#333" stroke-width="2" />
-                    
-                    <!-- Axis labels -->
-                    <text x="400" y="390" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">
-                      Month
-                    </text>
-                    <text x="20" y="190" text-anchor="middle" font-size="14" font-weight="bold" fill="#333"
-                      transform="rotate(-90, 20, 190)">
-                      Visitors
-                    </text>
-                  </svg>
+                  <VisitorsChart :data="monthlyStats" style="width: 100%;" />
                 </v-col>
               </v-row>
               <div class="text-center mt-4">
                 <v-chip color="primary" variant="outlined">
-                  Overall Average: {{ overallAverageVisitorsPerMonth }} visitors/month
+                  ⌀ {{ overallAverageVisitorsPerMonth }}/mon
                 </v-chip>
               </div>
             </div>
             <div v-else-if="!dataStore.loading && monthlyStats.length === 0" class="text-center text-medium-emphasis">
-              No data to display
+              Nix
             </div>
           </v-card-text>
         </v-card>
@@ -202,36 +120,15 @@
               <v-skeleton-loader type="image" width="200" height="200" />
             </div>
             <div v-else-if="!dataStore.loading && !dataStore.error && filteredPersonsCount > 0">
-              <div class="text-h6 text-center mb-4">Gender Pie</div>
+              <div class="text-h6 text-center mb-4">⚧️ Gender Pie</div>
               <v-row>
-                <v-col cols="12" md="6" class="d-flex justify-center">
-                  <svg :width="300" :height="300" viewBox="0 0 300 300">
-                    <g transform="translate(150, 150)">
-                      <path
-                        v-for="(slice, index) in genderSlices"
-                        :key="index"
-                        :d="slice.path"
-                        :fill="slice.color"
-                        :stroke="'white'"
-                        :stroke-width="2"
-                      />
-                    </g>
-                  </svg>
-                </v-col>
-                <v-col cols="12" md="6" class="d-flex align-center justify-center">
-                  <div class="d-flex flex-column gap-2">
-                    <div v-for="(stat, index) in genderStats" :key="index" class="d-flex align-center">
-                      <div
-                        :style="{ width: '15px', height: '15px', backgroundColor: stat.color, marginRight: '16px', borderRadius: '4px' }"
-                      ></div>
-                      <span>{{ stat.label }}: {{ stat.count }} ({{ stat.percentage }}%)</span>
-                    </div>
-                  </div>
+                <v-col cols="12">
+                   <GenderChart :data="genderStats" />
                 </v-col>
               </v-row>
             </div>
             <div v-else-if="!dataStore.loading && filteredPersonsCount === 0" class="text-center text-medium-emphasis">
-              No data to display
+              Nix
             </div>
           </v-card-text>
         </v-card>
@@ -244,36 +141,15 @@
               <v-skeleton-loader type="image" width="200" height="200" />
             </div>
             <div v-else-if="!dataStore.loading && !dataStore.error && filteredEventsCount > 0">
-              <div class="text-h6 text-center mb-4">Participant Cities Distribution</div>
+              <div class="text-h6 text-center mb-4">🏘️ Käffli Pie</div>
               <v-row>
-                <v-col cols="12" md="6" class="d-flex justify-center">
-                  <svg :width="300" :height="300" viewBox="0 0 300 300">
-                    <g transform="translate(150, 150)">
-                      <path
-                        v-for="(slice, index) in placeSlices"
-                        :key="index"
-                        :d="slice.path"
-                        :fill="slice.color"
-                        :stroke="'white'"
-                        :stroke-width="2"
-                      />
-                    </g>
-                  </svg>
-                </v-col>
-                <v-col cols="12" md="6" class="d-flex align-center justify-center">
-                  <div class="d-flex flex-column gap-8">
-                    <div v-for="(stat, index) in placeStats" :key="index" class="d-flex align-center">
-                      <div
-                        :style="{ width: '15px', height: '15px', backgroundColor: stat.color, marginRight: '16px', borderRadius: '4px' }"
-                      ></div>
-                      <span>{{ stat.label }}: {{ stat.count }} ({{ stat.percentage }}%)</span>
-                    </div>
-                  </div>
+                <v-col cols="12">
+                   <PlaceChart :data="placeStats" />
                 </v-col>
               </v-row>
             </div>
             <div v-else-if="!dataStore.loading && filteredEventsCount === 0" class="text-center text-medium-emphasis">
-              No data to display
+              Nix
             </div>
           </v-card-text>
         </v-card>
@@ -289,7 +165,7 @@
           @click="handleExport"
           :disabled="dataStore.loading || selectedYears.length === 0 || selectedEventNames.length === 0"
         >
-          Export Statistics
+          Export Stats
         </v-btn>
       </v-col>
     </v-row>
@@ -301,6 +177,9 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useDataStore } from '@/stores';
 import { exportService } from '@/services/exportService';
 import { apiService } from '@/services/apiService';
+import VisitorsChart from '@/components/charts/VisitorsChart.vue';
+import GenderChart from '@/components/charts/GenderChart.vue';
+import PlaceChart from '@/components/charts/PlaceChart.vue';
 
 const dataStore = useDataStore();
 const selectedYears = ref<number[]>([]);
@@ -325,16 +204,15 @@ const handleExport = async () => {
   }
 };
 
-// Get unique event names from events (filtered by selected years)
 const availableEventNames = computed(() => {
   const names = new Set<string>();
   
-  // Only show event names if years are selected
+
   if (selectedYears.value.length === 0) {
     return [];
   }
   
-  // Filter events by selected years
+
   const eventsToConsider = dataStore.events.filter(eventEntry => {
     if (eventEntry.event.eventDate) {
       const year = new Date(eventEntry.event.eventDate).getFullYear();
@@ -343,7 +221,7 @@ const availableEventNames = computed(() => {
     return false;
   });
   
-  // Get unique event names from the filtered events
+
   eventsToConsider.forEach(eventEntry => {
     if (eventEntry.event.name) {
       names.add(eventEntry.event.name);
@@ -353,7 +231,6 @@ const availableEventNames = computed(() => {
   return Array.from(names).sort();
 });
 
-// Get unique years from events
 const availableYears = computed(() => {
   const years = new Set<number>();
   dataStore.events.forEach(eventEntry => {
@@ -362,13 +239,12 @@ const availableYears = computed(() => {
       years.add(year);
     }
   });
-  return Array.from(years).sort((a, b) => a - b); // Sort ascending (lowest to highest)
+  return Array.from(years).sort((a, b) => a - b);
 });
 
-// Filter events based on selected years and event names
 const getFilteredEvents = () => {
   return dataStore.events.filter(eventEntry => {
-    // Filter by year
+  
     const yearMatch = selectedYears.value.length === 0 || (() => {
       if (eventEntry.event.eventDate) {
         const year = new Date(eventEntry.event.eventDate).getFullYear();
@@ -377,7 +253,7 @@ const getFilteredEvents = () => {
       return false;
     })();
 
-    // Filter by event name
+  
     const nameMatch = selectedEventNames.value.length === 0 || 
       selectedEventNames.value.includes(eventEntry.event.name);
 
@@ -385,12 +261,10 @@ const getFilteredEvents = () => {
   });
 };
 
-// Count events filtered by selected years and event names
 const filteredEventsCount = computed(() => {
   return getFilteredEvents().length;
 });
 
-// Count persons that participate in filtered events
 const filteredPersonsCount = computed(() => {
   const filteredEvents = getFilteredEvents();
   return filteredEvents.reduce((a,c) => a += c.event.participants.length, 0);
@@ -441,7 +315,6 @@ const genderStats = computed(() => {
   ].filter(stat => stat.count > 0);
 });
 
-// Calculate place distribution from filtered events
 const placeStats = computed(() => {
   const filteredEvents = getFilteredEvents();
   const cityMap = dataStore.persons.reduce<Record<string, string>>((a,c)=>{
@@ -458,6 +331,10 @@ const placeStats = computed(() => {
   filteredEvents.forEach(eventEntry => {
   eventEntry.event.participants.forEach(participantId => {
       let city = cityMap[participantId]
+      if (city === undefined) {
+        console.log(`person with id ${participantId} not found`);
+        return
+      }
       if(cityCounts[city]){
         cityCounts[city]++;
       } else {
@@ -483,54 +360,17 @@ const placeStats = computed(() => {
     }));
 });
 
-// Create pie chart slices
-const genderSlices = computed(() => {
-  const stats = genderStats.value;
-  if (stats.length === 0) return [];
-  
-  const total = stats.reduce((sum, stat) => sum + stat.count, 0);
-  let currentAngle = -Math.PI / 2; // Start at top
-  
-  return stats.map(stat => {
-    const percentage = stat.count / total;
-    const angle = percentage * 2 * Math.PI;
-    const endAngle = currentAngle + angle;
-    
-    const x1 = Math.cos(currentAngle) * 120;
-    const y1 = Math.sin(currentAngle) * 120;
-    const x2 = Math.cos(endAngle) * 120;
-    const y2 = Math.sin(endAngle) * 120;
-    
-    const largeArcFlag = angle > Math.PI ? 1 : 0;
-    
-    const path = [
-      `M 0 0`,
-      `L ${x1} ${y1}`,
-      `A 120 120 0 ${largeArcFlag} 1 ${x2} ${y2}`,
-      `Z`
-    ].join(' ');
-    
-    currentAngle = endAngle;
-    
-    return {
-      path,
-      color: stat.color
-    };
-  });
-});
-
-// Calculate monthly statistics with average visitors
 const monthlyStats = computed<Array<{ month: number; year: number; avgVisitors: number; monthName: string; eventCount: number }>>(() => {
   const filteredEvents = getFilteredEvents();
   if (filteredEvents.length === 0) return [];
   
-  // Group events by month
+
   const monthMap = new Map<string, { month: number; year: number; totalVisitors: number; eventCount: number }>();
   
   filteredEvents.forEach(eventEntry => {
     const eventDate = new Date(eventEntry.event.eventDate);
     const year = eventDate.getFullYear();
-    const month = eventDate.getMonth(); // 0-11
+    const month = eventDate.getMonth();
     const monthKey = `${year}-${month}`;
     
     if (!monthMap.has(monthKey)) {
@@ -542,8 +382,8 @@ const monthlyStats = computed<Array<{ month: number; year: number; avgVisitors: 
     monthData.eventCount++;
   });
   
-  // Convert to array, calculate averages, and sort by year and month
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  const monthNames = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
   
   return Array.from(monthMap.values())
     .map(data => ({
@@ -559,96 +399,15 @@ const monthlyStats = computed<Array<{ month: number; year: number; avgVisitors: 
     });
 });
 
-const maxMonthlyVisitors = computed(() => {
-  if (monthlyStats.value.length === 0) return 0;
-  return Math.max(...monthlyStats.value.map(m => m.avgVisitors));
-});
-
-const pointSpacing = computed(() => {
-  const numMonths = monthlyStats.value.length;
-  if (numMonths <= 1) return 0;
-  return 660 / (numMonths - 1); // 740 - 80 = 660 for padding
-});
-
-// Generate line path for the chart
-const linePath = computed(() => {
-  if (monthlyStats.value.length === 0) return '';
-  
-  const maxVisitors = maxMonthlyVisitors.value || 1;
-  const spacing = pointSpacing.value;
-  
-  return monthlyStats.value.map((month, index) => {
-    const x = 80 + index * spacing;
-    const y = 330 - (month.avgVisitors / maxVisitors) * 280;
-    return index === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
-  }).join(' ');
-});
-
-// Generate area path (filled area under the line)
-const lineAreaPath = computed(() => {
-  if (monthlyStats.value.length === 0) return '';
-  
-  const maxVisitors = maxMonthlyVisitors.value || 1;
-  const spacing = pointSpacing.value;
-  
-  const linePart = monthlyStats.value.map((month, index) => {
-    const x = 80 + index * spacing;
-    const y = 330 - (month.avgVisitors / maxVisitors) * 280;
-    return index === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
-  }).join(' ');
-  
-  // Close the path to the baseline
-  const lastX = 80 + (monthlyStats.value.length - 1) * spacing;
-  const firstX = 80;
-  
-  return `${linePart} L ${lastX} 330 L ${firstX} 330 Z`;
-});
-
 const overallAverageVisitorsPerMonth = computed(() => {
   if (monthlyStats.value.length === 0) return 0;
   const total = monthlyStats.value.reduce((sum, month) => sum + month.avgVisitors, 0);
   return (total / monthlyStats.value.length).toFixed(1);
 });
 
-// Create pie chart slices for places
-const placeSlices = computed(() => {
-  const stats = placeStats.value;
-  if (stats.length === 0) return [];
-  
-  const total = stats.reduce((sum, stat) => sum + stat.count, 0);
-  let currentAngle = -Math.PI / 2; // Start at top
-  
-  return stats.map(stat => {
-    const percentage = stat.count / total;
-    const angle = percentage * 2 * Math.PI;
-    const endAngle = currentAngle + angle;
-    
-    const x1 = Math.cos(currentAngle) * 120;
-    const y1 = Math.sin(currentAngle) * 120;
-    const x2 = Math.cos(endAngle) * 120;
-    const y2 = Math.sin(endAngle) * 120;
-    
-    const largeArcFlag = angle > Math.PI ? 1 : 0;
-    
-    const path = [
-      `M 0 0`,
-      `L ${x1} ${y1}`,
-      `A 120 120 0 ${largeArcFlag} 1 ${x2} ${y2}`,
-      `Z`
-    ].join(' ');
-    
-    currentAngle = endAngle;
-    
-    return {
-      path,
-      color: stat.color
-    };
-  });
-});
-
 onMounted(async () => {
   await dataStore.fetchAll();
-  // Initially, no year or event name is selected
+
   selectedYears.value = [new Date().getFullYear()];
   selectedEventNames.value = [];
 
@@ -663,9 +422,8 @@ onMounted(async () => {
 
 });
 
-// Watch for year changes and update selectedEventNames to only include available ones
 watch(availableEventNames, (newEventNames) => {
-  // Filter selectedEventNames to only include ones that are still available
+
   selectedEventNames.value = selectedEventNames.value.filter(name => 
     newEventNames.includes(name)
   );

@@ -10,7 +10,6 @@
         <v-card>
           <v-card-title class="d-flex align-center" color="primary">
             <v-icon class="mr-2">mdi-calendar</v-icon>
-            Add New Event
             <v-spacer />
             <v-btn
               variant="text"
@@ -25,7 +24,7 @@
                   <v-select
                     v-model="form.name"
                     :items="eventTypes"
-                    label="Event Name"
+                    label="Event"
                     :rules="[rules.required]"
                     variant="outlined"
                     required
@@ -77,7 +76,7 @@
               :loading="loading"
               @click="handleSubmit"
             >
-              Add Event
+              Add
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -123,7 +122,7 @@ const form = ref<Event>({
 });
 
 const rules = {
-  required: (value: string) => !!value || 'This field is required'
+  required: (value: string) => !!value || 'Usfülle!😡'
 };
 
 const showSnackbar = (text: string, color: 'success' | 'error' = 'success') => {
@@ -139,21 +138,21 @@ const handleSubmit = async () => {
     const resp = await apiService.addEvent(form.value);
     showSnackbar(`Looks good💩`);
     
-    // Refresh the data store
+
     await dataStore.fetchEvents();
     
-    // Wait a bit for WebSocket to receive the new event
+
     await new Promise(resolve => setTimeout(resolve, 500));
     
     
     
     if (resp && resp.newID) {
-      // Navigate to edit mode with the new event ID
+  
       setTimeout(() => {
         router.push({ name: 'event-edit', params: { id: resp.newID } });
       }, 500);
     } else {
-      // Fallback to events view if event not found
+  
       setTimeout(() => {
         router.push({ name: 'events' });
       }, 800);
@@ -175,7 +174,6 @@ const handleBack = () => {
 };
 
 onMounted(async () => {
-  // Fetch constants for event types
   try {
     const constants = await apiService.getConstants();
     eventTypes.value = constants.event_types;

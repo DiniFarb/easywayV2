@@ -21,7 +21,9 @@
                   v-model="credentials.password"
                   label="Password"
                   prepend-icon="mdi-lock"
-                  type="password"
+                  :type="showPassword ? 'text' : 'password'"
+                  :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                  @click:append-inner="showPassword = !showPassword"
                   variant="outlined"
                   :error-messages="errors.password"
                   required
@@ -65,6 +67,7 @@ const router = useRouter();
 const theme = useTheme();
 const dataStore = useDataStore();
 const loading = ref(false);
+const showPassword = ref(false);
 const errorMessage = ref('');
 const credentials = ref<LoginCredentials>({
   username: '',
@@ -98,11 +101,11 @@ const handleLogin = async () => {
 
   // Validate
   if (!credentials.value.username) {
-    errors.value.username = 'Username is required';
+    errors.value.username = 'Usfülle!😡';
     return;
   }
   if (!credentials.value.password) {
-    errors.value.password = 'Password is required';
+    errors.value.password = 'Usfülle!😡';
     return;
   }
 
@@ -117,7 +120,7 @@ const handleLogin = async () => {
     
     router.push({ name: 'dashboard' });
   } catch (error) {
-    errorMessage.value = 'Login failed. Please check your credentials.';
+    errorMessage.value = 'Haha, drigschisse 💩';
   } finally {
     loading.value = false;
   }

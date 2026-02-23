@@ -19,7 +19,7 @@
           prepend-icon="mdi-plus"
           @click="$router.push({ name: 'person-add' })"
         >
-          Add New
+          Neue Lappe
         </v-btn>
       </v-col>
       <v-col cols="auto">
@@ -43,7 +43,7 @@
       <v-col cols="12" md="8">
         <v-text-field
           v-model="searchQuery"
-          label="Search persons..."
+          label="Sueche..."
           prepend-inner-icon="mdi-magnify"
           variant="outlined"
           clearable
@@ -55,7 +55,7 @@
         <v-select
           v-model="sortBy"
           :items="sortOptions"
-          label="Sort by"
+          label="Sortiere"
           variant="outlined"
           density="comfortable"
           hide-details
@@ -71,14 +71,14 @@
     <v-dialog v-model="exportDialog" max-width="900">
       <v-card>
         <v-card-title class="text-h5 d-flex justify-space-between align-center">
-          <span>Export Persons</span>
+          <span>Export</span>
           <v-btn
             variant="text"
             color="primary"
             size="small"
             @click="selectedEventTypes = []"
           >
-            Clear All
+            Aui abwähle...
           </v-btn>
         </v-card-title>
         <v-card-text>
@@ -107,7 +107,7 @@
             variant="text"
             @click="exportDialog = false"
           >
-            Cancel
+            Zrüg
           </v-btn>
           <v-btn
             color="primary"
@@ -172,22 +172,22 @@
             <div class="mb-2">
               <v-icon class="mr-2" size="small">mdi-cake-variant</v-icon>
               <span v-if="personEntry.person.birthdate">{{ formatDate(personEntry.person.birthdate) }} ({{ calculateAge(personEntry.person.birthdate) }}y)</span>
-              <v-chip v-else color="error" size="small" variant="flat">missing</v-chip>
+              <v-chip v-else color="error" size="small" variant="flat">😩</v-chip>
             </div>
             <div class="mb-2">
               <v-icon class="mr-2" size="small">mdi-map-marker</v-icon>
               <span v-if="personEntry.person.city">{{ personEntry.person.city }}</span>
-              <v-chip v-else color="error" size="small" variant="flat">missing</v-chip>
+              <v-chip v-else color="error" size="small" variant="flat">😩</v-chip>
             </div>
             <div class="mb-2">
               <v-icon class="mr-2" size="small">mdi-phone</v-icon>
               <span v-if="personEntry.person.phone">{{ personEntry.person.phone }}</span>
-              <v-chip v-else color="error" size="small" variant="flat">missing</v-chip>
+              <v-chip v-else color="error" size="small" variant="flat">😩</v-chip>
             </div>
             <div class="mb-2">
               <v-icon class="mr-2" size="small">mdi-phone-alert</v-icon>
               <span v-if="personEntry.person.emergency_phone">{{ personEntry.person.emergency_phone }}</span>
-              <v-chip v-else color="error" size="small" variant="flat">missing</v-chip>
+              <v-chip v-else color="error" size="small" variant="flat">😩</v-chip>
             </div>
             <div class="mb-2">
               <v-icon class="mr-2" size="small">mdi-calendar-multiple</v-icon>
@@ -223,9 +223,8 @@
 
     <v-row v-if="!initialLoading && filteredPersons.length === 0">
       <v-col cols="12" class="text-center">
-        <v-icon size="64" color="grey">mdi-account-group</v-icon>
         <p class="text-h6 mt-4 text-medium-emphasis">
-          {{ searchQuery ? 'No persons found matching your search' : 'No persons found' }}
+          {{ searchQuery ? '🤷' : 'No persons found' }}
         </p>
       </v-col>
     </v-row>
@@ -259,23 +258,21 @@ let observer: IntersectionObserver | null = null;
 const sortOptions = [
   { title: 'Name (A-Z)', value: 'name-asc' },
   { title: 'Name (Z-A)', value: 'name-desc' },
-  { title: 'Age (Youngest First)', value: 'age-asc' },
-  { title: 'Age (Oldest First)', value: 'age-desc' },
-  { title: 'City (A-Z)', value: 'city-asc' },
-  { title: 'City (Z-A)', value: 'city-desc' },
+  { title: 'Alter (Jüngste zersch)', value: 'age-asc' },
+  { title: 'Alter (Älteste zersch)', value: 'age-desc' },
+  { title: 'Stadt (A-Z)', value: 'city-asc' },
+  { title: 'Stadt (Z-A)', value: 'city-desc' },
 ];
 
 const filteredPersons = computed(() => {
   let persons = [...dataStore.persons];
 
-  // Filter out dummies if switch is enabled
   if (hideDummies.value) {
     persons = persons.filter(personEntry => 
       !personEntry.person.firstname?.startsWith('#DUMMY')
     );
   }
 
-  // Filter by search query
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     persons = persons.filter(personEntry => {
@@ -301,7 +298,6 @@ const filteredPersons = computed(() => {
     });
   }
 
-  // Sort persons
   persons.sort((a, b) => {
     switch (sortBy.value) {
       case 'name-asc':
@@ -367,13 +363,8 @@ const getEventCount = (personId: string) => {
 const getGenderIcon = (gender: string) => {
   switch (gender?.toLowerCase()) {
     case 'm':
-    case 'male':
-    case 'männlich':
       return 'mdi-gender-male';
     case 'w':
-    case 'f':
-    case 'female':
-    case 'weiblich':
       return 'mdi-gender-female';
     default:
       return 'mdi-gender-male-female';
@@ -391,12 +382,10 @@ const loadMore = () => {
 };
 
 const setupInfiniteScroll = () => {
-  // Disconnect existing observer if any
   if (observer) {
     observer.disconnect();
   }
   
-  // Wait for next tick to ensure element is rendered
   nextTick(() => {
     if (!infiniteScrollTrigger.value) return;
     
@@ -428,26 +417,20 @@ const handleExport = async () => {
     exporting.value = false;
   }
 };
-
-// Reset pagination when search or sort changes
 watch([searchQuery, sortBy, hideDummies], () => {
   currentPage.value = 1;
-  // Re-setup infinite scroll after content changes
   nextTick(() => setupInfiniteScroll());
 });
 
 const handlePersonUpdate = async () => {
-  // Refresh persons when a person is updated or added
   await dataStore.fetchPersons();
 };
 
 const handlePersonDelete = async () => {
-  // Refresh persons when a person is deleted
   await dataStore.fetchPersons();
 };
 
 const handleEventUpdate = async () => {
-  // Refresh events when an event is updated (affects participant count)
   await dataStore.fetchEvents();
 };
 
@@ -457,7 +440,6 @@ onMounted(async () => {
   }
   initialLoading.value = false;
   
-  // Fetch event types from constants
   try {
     const constants = await apiService.getConstants();
     if (constants.event_types) {
@@ -467,10 +449,8 @@ onMounted(async () => {
     console.error('Failed to fetch event types:', error);
   }
   
-  // Setup infinite scroll after initial load
   setupInfiniteScroll();
   
-  // Setup WebSocket listeners for real-time updates
   websocketService.on('person:updated', handlePersonUpdate);
   websocketService.on('person:deleted', handlePersonDelete);
   websocketService.on('event:updated', handleEventUpdate);
@@ -481,7 +461,6 @@ onUnmounted(() => {
     observer.disconnect();
   }
   
-  // Remove WebSocket listeners
   websocketService.off('person:updated', handlePersonUpdate);
   websocketService.off('person:deleted', handlePersonDelete);
   websocketService.off('event:updated', handleEventUpdate);

@@ -22,7 +22,7 @@
               class="ml-2"
               @click="goToToday"
             >
-              Today
+              Hüt
             </v-btn>
             <v-spacer />
             <v-btn
@@ -30,7 +30,7 @@
               prepend-icon="mdi-plus"
               @click="$router.push({ name: 'event-add' })"
             >
-              Add Event
+              Neue Event
             </v-btn>
           </v-card-title>
           <v-divider />

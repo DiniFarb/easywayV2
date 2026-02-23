@@ -3,7 +3,7 @@
     <v-card>
       <v-card-title class="d-flex align-center">
         <v-icon class="mr-2">mdi-account-multiple-plus</v-icon>
-        Add Dummy Participants
+        Add 👻
         <v-spacer />
         <v-btn
           variant="text"
@@ -91,7 +91,7 @@
           :loading="loading"
           :disabled="!formValid"
         >
-          Add Dummies
+          Add
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -122,7 +122,7 @@ const loading = ref(false);
 const form = ref({
   amount: 1,
   gender: 'M',
-  age: 18,
+  age: 12,
   place: '',
   comments: ''
 });
@@ -154,7 +154,6 @@ const handleAdd = async () => {
   const createdPersonIds: string[] = [];
   
   try {
-    // Create dummy persons based on amount
     for (let i = 0; i < form.value.amount; i++) {
       const birthdate = calculateBirthdate(form.value.age);
       

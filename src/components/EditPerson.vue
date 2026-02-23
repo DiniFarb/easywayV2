@@ -28,7 +28,6 @@
         <v-card>
           <v-card-title class="d-flex align-center" color="primary">
             <v-icon class="mr-2">mdi-account</v-icon>
-            Edit Person
             <v-spacer />
             <v-btn
               variant="text"
@@ -42,7 +41,7 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.firstname"
-                    label="First Name"
+                    label="Vorname"
                     :rules="[rules.required]"
                     variant="outlined"
                     required
@@ -52,7 +51,7 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.lastname"
-                    label="Last Name"
+                    label="Nachname"
                     :rules="[rules.required]"
                     variant="outlined"
                     required
@@ -65,7 +64,7 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.birthdate"
-                    label="Birthdate"
+                    label="Geburtsdatum"
                     type="date"
                     variant="outlined"
                     @blur="autoSave"
@@ -74,7 +73,7 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.city"
-                    label="City"
+                    label="Stadt"
                     :rules="[rules.required]"
                     variant="outlined"
                     required
@@ -104,7 +103,7 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.phone"
-                    label="Phone"
+                    label="Telefon"
                     variant="outlined"
                     @blur="autoSave"
                   />
@@ -112,7 +111,7 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.emergency_phone"
-                    label="Emergency Phone"
+                    label="Notfalltelefon"
                     variant="outlined"
                     @blur="autoSave"
                   />
@@ -151,7 +150,7 @@
                         <tbody>
                           <tr v-if="linkedEvents.length === 0">
                             <td colspan="3" class="text-center text-grey pa-4">
-                              No events linked yet
+                              No nüt
                             </td>
                           </tr>
                           <tr v-for="event in linkedEvents" :key="event.id">
@@ -176,7 +175,7 @@
                 <v-col cols="12" md="6">
                   <v-card variant="outlined">
                     <v-card-title class="d-flex align-center pa-3 bg-grey-lighten-3">
-                      <span>Available Events ({{ filteredAvailableEvents.length }})</span>
+                      <span>Verfüegbari Events ({{ filteredAvailableEvents.length }})</span>
                     </v-card-title>
                     <v-divider />
                     <v-card-text class="pa-2">
@@ -195,15 +194,15 @@
                       <v-table density="compact">
                         <thead>
                           <tr>
-                            <th class="text-left">Event Type</th>
-                            <th class="text-left">Date</th>
+                            <th class="text-left">Event</th>
+                            <th class="text-left">Datum</th>
                             <th class="text-left" style="width: 60px;"></th>
                           </tr>
                         </thead>
                         <tbody>
                           <tr v-if="filteredAvailableEvents.length === 0">
                             <td colspan="3" class="text-center text-grey pa-4">
-                              {{ eventSearch ? 'No matching events' : 'All events have been linked' }}
+                              {{ eventSearch ? 'No nüt' : 'Aui linked' }}
                             </td>
                           </tr>
                           <tr v-for="event in filteredAvailableEvents" :key="event.id">
@@ -237,7 +236,7 @@
               :disabled="loading"
               @click="handleDelete"
             >
-              Delete
+              Lösche
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -256,11 +255,8 @@
       <v-card>
         <v-card-title class="text-h5" color="error">
           <v-icon class="mr-2" color="error">mdi-alert</v-icon>
-          Confirm Deletion
+          Bisch sicher?
         </v-card-title>
-        <v-card-text class="pt-4">
-          Are you sure you want to delete this person? This action cannot be undone.
-        </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn
@@ -268,7 +264,7 @@
             variant="text"
             @click="deleteDialog = false"
           >
-            Cancel
+            Nö
           </v-btn>
           <v-btn
             color="error"
@@ -276,7 +272,7 @@
             :loading="loading"
             @click="confirmDelete"
           >
-            Delete
+            Jup
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -287,11 +283,8 @@
       <v-card>
         <v-card-title class="text-h6 bg-warning">
           <v-icon class="mr-2">mdi-alert</v-icon>
-          Remove from Event
+          Bisch sicher?
         </v-card-title>
-        <v-card-text class="pt-4">
-          Are you sure you want to remove this person from the event?
-        </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn
@@ -299,14 +292,14 @@
             variant="text"
             @click="removeEventDialog = false"
           >
-            Cancel
+            Nö
           </v-btn>
           <v-btn
             color="error"
             variant="elevated"
             @click="confirmRemoveFromEvent"
           >
-            Remove
+            Jup
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -350,12 +343,6 @@ const form = ref<Person>({
   emergency_phone: '',
   comments: ''
 });
-
-const genderOptions = [
-  { title: 'Male', value: 'M' },
-  { title: 'Female', value: 'W' },
-  { title: 'Other', value: 'O' }
-];
 
 const rules = {
   required: (value: string) => !!value || 'This field is required'
@@ -407,7 +394,6 @@ const formatDate = (dateString: string | undefined) => {
 
 const formatDateForInput = (dateString: string) => {
   if (!dateString) return '';
-  // Convert ISO date to YYYY-MM-DD format
   const date = new Date(dateString);
   return date.toISOString().split('T')[0];
 };
@@ -463,29 +449,6 @@ const removeFromEvent = async (eventId: string) => {
   }
 };
 
-const removeAllEvents = async () => {
-  try {
-    // Update all linked events to remove this person
-    const updatePromises = linkedEvents.value.map(event => {
-      const eventEntry = dataStore.events.find(e => e._id === event.id);
-      if (eventEntry) {
-        const updatedEvent = {
-          ...eventEntry.event,
-          participants: eventEntry.event.participants.filter(id => id !== personId.value)
-        };
-        return apiService.updateEvent(event.id, updatedEvent);
-      }
-      return Promise.resolve();
-    });
-    
-    await Promise.all(updatePromises);
-    await dataStore.fetchEvents();
-  } catch (error) {
-    console.error('Error removing person from all events:', error);
-    showSnackbar('Failed to remove from all events', 'error');
-  }
-};
-
 const autoSave = async () => {
   if (!formValid.value || isUpdatingFromWebSocket.value) return;
   
@@ -505,7 +468,7 @@ const handleSave = async () => {
   try {
     await apiService.updatePerson(personId.value, form.value);
     
-    // Refresh the data store
+
     await dataStore.fetchPersons();
     
   } catch (error) {
@@ -520,7 +483,6 @@ const handleSave = async () => {
 };
 
 const handleBack = async () => {
-  // Save before leaving if form is valid
   if (formValid.value) {
     try {
       await apiService.updatePerson(personId.value, form.value);
@@ -530,7 +492,6 @@ const handleBack = async () => {
     }
   }
 
-  // Check if we should return to a specific view (e.g. event-edit)
   const returnTo = route.query.returnTo as string;
   const returnId = route.query.returnId as string;
   
@@ -552,11 +513,7 @@ const confirmDelete = async () => {
   try {
     await apiService.deletePerson(personId.value);
     showSnackbar(`Looks good💩`);
-    
-    // Refresh the data store
     await dataStore.fetchPersons();
-    
-    // Navigate back to persons view
     setTimeout(() => {
       router.push({ name: 'persons' });
     }, 500);
@@ -571,13 +528,8 @@ const confirmDelete = async () => {
   }
 };
 
-// Watch form fields for auto-save
-// Removed watchers to prevent auto-save on every keystroke
-// Auto-save is now triggered by @blur events on input fields
-
 
 const handlePersonUpdate = (personEntry: PersonEntry) => {
-  // Only update if this is the person we're currently editing
   if (personEntry._id === personId.value) {
     console.log('Received WebSocket person update:', personEntry);
     
@@ -585,14 +537,8 @@ const handlePersonUpdate = (personEntry: PersonEntry) => {
       ...personEntry.person,
       birthdate: formatDateForInput(personEntry.person.birthdate)
     };
-    
-    // Set flag to prevent auto-save
     isUpdatingFromWebSocket.value = true;
-    
-    // Update form fields
     form.value = serverData;
-    
-    // Reset flag after a short delay
     setTimeout(() => {
       isUpdatingFromWebSocket.value = false;
     }, 100);
@@ -600,7 +546,6 @@ const handlePersonUpdate = (personEntry: PersonEntry) => {
 };
 
 const handlePersonDelete = (personEntry: PersonEntry) => {
-  // If the person being edited was deleted, redirect to persons list
   if (personEntry._id === personId.value) {
     showSnackbar('Person was deleted by another user', 'error');
     setTimeout(() => {
@@ -610,17 +555,14 @@ const handlePersonDelete = (personEntry: PersonEntry) => {
 };
 
 const handleEventUpdate = async () => {
-  // Refresh events list when an event is updated (affects linked events)
   await dataStore.fetchEvents();
 };
 
 onMounted(async () => {
-  // Ensure we have both persons and events data
   if (dataStore.persons.length === 0 || dataStore.events.length === 0) {
     await dataStore.fetchAll();
   }
   
-  // Load existing person data
   const existingPerson = dataStore.persons.find(p => p._id === personId.value);
   if (existingPerson) {
     form.value = { 
@@ -628,7 +570,7 @@ onMounted(async () => {
       birthdate: formatDateForInput(existingPerson.person.birthdate)
     };
   } else {
-    // If person not found in store, fetch all data
+
     await dataStore.fetchPersons();
     const person = dataStore.persons.find(p => p._id === personId.value);
     if (person) {
@@ -639,14 +581,12 @@ onMounted(async () => {
     }
   }
   
-  // Setup WebSocket listener for real-time updates
   websocketService.on('person:updated', handlePersonUpdate);
   websocketService.on('person:deleted', handlePersonDelete);
   websocketService.on('event:updated', handleEventUpdate);
 });
 
 onUnmounted(() => {
-  // Remove WebSocket listener
   websocketService.off('person:updated', handlePersonUpdate);
   websocketService.off('person:deleted', handlePersonDelete);
   websocketService.off('event:updated', handleEventUpdate);

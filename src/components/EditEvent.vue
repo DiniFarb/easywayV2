@@ -27,7 +27,6 @@
         <v-card>
           <v-card-title class="d-flex align-center" color="primary">
             <v-icon class="mr-2">mdi-calendar</v-icon>
-            Edit Event
             <v-spacer />
             <v-btn
               variant="text"
@@ -42,7 +41,7 @@
                   <v-select
                     v-model="form.name"
                     :items="eventTypes"
-                    label="Event Name"
+                    label="Event"
                     :rules="[rules.required]"
                     variant="outlined"
                     required
@@ -54,7 +53,7 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.eventDate"
-                    label="Event Date"
+                    label="Datum"
                     type="date"
                     :rules="[rules.required]"
                     variant="outlined"
@@ -65,7 +64,7 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.place"
-                    label="Place"
+                    label="Ort"
                     :rules="[rules.required]"
                     variant="outlined"
                     required
@@ -79,7 +78,7 @@
                 <v-col cols="12" md="6">
                   <v-card variant="outlined">
                     <v-card-title class="d-flex align-center pa-3 bg-primary">
-                      <span>Participants ({{ filteredSelectedParticipants.length }})</span>
+                      <span>Besucher ({{ filteredSelectedParticipants.length }})</span>
                       <v-spacer />
                       <v-btn
                         icon="mdi-ghost"
@@ -93,7 +92,7 @@
                         size="small"
                         variant="text"
                         @click="addPersonDialog = true"
-                        title="Add Person"
+                        title="Neue lappe"
                       />
                     </v-card-title>
                     <v-divider />
@@ -148,7 +147,7 @@
                 <v-col cols="12" md="6">
                   <v-card variant="outlined">
                     <v-card-title class="d-flex align-center pa-3 bg-grey-lighten-3">
-                      <span>Available Persons ({{ filteredAvailablePersons.length }})</span>
+                      <span>Verfügbari Lappe ({{ filteredAvailablePersons.length }})</span>
                       <v-spacer />
                       <v-switch
                         v-if="isAdmin"
@@ -178,15 +177,15 @@
                         <thead>
                           <tr>
                             <th class="text-left">Name</th>
-                            <th class="text-left">Birthday</th>
-                            <th class="text-left">Place</th>
-                            <th class="text-right" style="width: 100px;">Actions</th>
+                            <th class="text-left">Geburtsdatum</th>
+                            <th class="text-left">Ort</th>
+                            <th class="text-right" style="width: 100px;">Aktionen</th>
                           </tr>
                         </thead>
                         <tbody>
                           <tr v-if="filteredAvailablePersons.length === 0">
                             <td colspan="4" class="text-center text-grey pa-4">
-                              {{ personSearch ? 'No matching persons' : 'All persons have been added' }}
+                              {{ personSearch ? 'Keini passende Lappe' : 'Aui Lappe si derbi!' }}
                             </td>
                           </tr>
                           <tr v-for="person in filteredAvailablePersons" :key="person.id">
@@ -201,7 +200,7 @@
                                 color="grey-darken-1"
                                 class="mr-1"
                                 @click="editPerson(person.id)"
-                                title="Edit Person"
+                                title="Edit Lappe"
                               />
                               <v-btn
                                 icon="mdi-plus-circle"
@@ -209,7 +208,7 @@
                                 variant="text"
                                 color="primary"
                                 @click="addParticipant(person.id)"
-                                title="Add to Event"
+                                title="Add"
                               />
                             </td>
                           </tr>
@@ -243,7 +242,7 @@
               :disabled="loading"
               @click="handleDelete"
             >
-              Delete
+              Lösche
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -262,11 +261,8 @@
       <v-card>
         <v-card-title class="text-h5" color="error">
           <v-icon class="mr-2" color="error">mdi-alert</v-icon>
-          Confirm Deletion
+          Bisch sicher?
         </v-card-title>
-        <v-card-text class="pt-4">
-          Are you sure you want to delete this event? This action cannot be undone.
-        </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn
@@ -274,7 +270,7 @@
             variant="text"
             @click="deleteDialog = false"
           >
-            Cancel
+            Nö
           </v-btn>
           <v-btn
             color="error"
@@ -282,7 +278,7 @@
             :loading="loading"
             @click="confirmDelete"
           >
-            Delete
+            Jup
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -292,11 +288,8 @@
       <v-card>
         <v-card-title class="text-h5" color="warning">
           <v-icon class="mr-2" color="warning">mdi-alert</v-icon>
-          Confirm Event Type Change
+          Bisch sicher?
         </v-card-title>
-        <v-card-text class="pt-4">
-          You are changing the event type from <strong>{{ originalEventType }}</strong> to <strong>{{ form.name }}</strong>. Are you sure you want to continue?
-        </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn
@@ -304,7 +297,7 @@
             variant="text"
             @click="cancelEventTypeChange"
           >
-            Cancel
+            Nö
           </v-btn>
           <v-btn
             color="warning"
@@ -312,7 +305,7 @@
             :loading="loading"
             @click="confirmEventTypeChange"
           >
-            Confirm
+            Jup
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -322,11 +315,8 @@
       <v-card>
         <v-card-title class="text-h5" color="warning">
           <v-icon class="mr-2" color="warning">mdi-alert</v-icon>
-          Confirm Event Type Change
+          Bisch sicher?
         </v-card-title>
-        <v-card-text class="pt-4">
-          You are changing the event type from <strong>{{ originalEventType }}</strong> to <strong>{{ form.name }}</strong>. Are you sure you want to continue?
-        </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn
@@ -334,7 +324,7 @@
             variant="text"
             @click="cancelEventTypeChange"
           >
-            Cancel
+            Nö
           </v-btn>
           <v-btn
             color="warning"
@@ -342,7 +332,7 @@
             :loading="loading"
             @click="confirmEventTypeChange"
           >
-            Confirm
+            Jup
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -361,11 +351,8 @@
       <v-card>
         <v-card-title class="text-h6 bg-warning">
           <v-icon class="mr-2">mdi-alert</v-icon>
-          Remove Participant
+          Bisch sicher?
         </v-card-title>
-        <v-card-text class="pt-4">
-          Are you sure you want to remove this participant from the event?
-        </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn
@@ -373,14 +360,14 @@
             variant="text"
             @click="removeParticipantDialog = false"
           >
-            Cancel
+            Nö
           </v-btn>
           <v-btn
             color="error"
             variant="elevated"
             @click="confirmRemoveParticipant"
           >
-            Remove
+            Jup
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -489,14 +476,12 @@ const filteredSelectedParticipants = computed(() => {
 const filteredAvailablePersons = computed(() => {
   let persons = availablePersons.value;
   
-  // Filter out dummies if switch is enabled
   if (hideAvailableDummies.value) {
     persons = persons.filter(person => 
       !person.fullName.startsWith('#DUMMY')
     );
   }
   
-  // Apply search filter
   if (!personSearch.value) {
     return persons;
   }
@@ -586,7 +571,7 @@ const handleSave = async () => {
   try {
     await apiService.updateEvent(eventId.value, form.value);
     
-    // Refresh the data store
+
     await dataStore.fetchEvents();
     
   } catch (error) {
@@ -601,11 +586,9 @@ const handleSave = async () => {
 };
 
 const cancelEventTypeChange = () => {
-  // Revert to original event type
   isRevertingEventType.value = true;
   form.value.name = originalEventType.value;
   eventTypeChangeDialog.value = false;
-  // Reset flag after Vue's next tick
   setTimeout(() => {
     isRevertingEventType.value = false;
   }, 100);
@@ -613,13 +596,10 @@ const cancelEventTypeChange = () => {
 
 const confirmEventTypeChange = async () => {
   eventTypeChangeDialog.value = false;
-  // Update original event type to new value
   originalEventType.value = form.value.name;
-  // Auto-save will trigger automatically from existing watcher
 };
 
 const handleBack = async () => {
-  // Save before leaving if form is valid
   if (formValid.value) {
     try {
       await apiService.updateEvent(eventId.value, form.value);
@@ -632,7 +612,6 @@ const handleBack = async () => {
 };
 
 const editPerson = (personId: string) => {
-  // Save current event state before navigating
   if (formValid.value) {
     apiService.updateEvent(eventId.value, form.value).catch(err => console.error(err));
   }
@@ -656,10 +635,10 @@ const confirmDelete = async () => {
     await apiService.deleteEvent(eventId.value);
     showSnackbar('Event deleted successfully');
     
-    // Refresh the data store
+
     await dataStore.fetchEvents();
     
-    // Navigate back to events view
+
     setTimeout(() => {
       router.push({ name: 'events' });
     }, 500);
@@ -673,27 +652,18 @@ const confirmDelete = async () => {
     loading.value = false;
   }
 };
-
-// Watch form fields for auto-save
-// Removed watchers for text fields to prevent auto-save on every keystroke
-// Kept name watcher as it handles special logic for event type changes (dropdown selection is discrete action)
 watch(() => form.value.name, (newValue) => {
-  // If we're reverting, don't trigger anything
   if (isRevertingEventType.value || isUpdatingFromWebSocket.value) return;
   
-  // Check if event type changed from original
   if (newValue !== originalEventType.value) {
     eventTypeChangeDialog.value = true;
   } else {
     autoSave();
   }
 });
-
-// Watch participants changes (this happens via button clicks, not keystrokes, so immediate save is appropriate)
 watch(() => form.value.participants, autoSave, { deep: true });
 
 const handleEventUpdate = (eventEntry: EventEntry) => {
-  // Only update if this is the event we're currently editing
   if (eventEntry._id === eventId.value) {
    const serverData = {
       name: eventEntry.event.name,
@@ -703,20 +673,20 @@ const handleEventUpdate = (eventEntry: EventEntry) => {
       participants: eventEntry.event.participants
     };
     
-    // Set flag to prevent auto-save
+
     isUpdatingFromWebSocket.value = true;
     
-    // Update each field individually to ensure reactivity
+
     form.value.name = serverData.name;
     form.value.eventDate = serverData.eventDate;
     form.value.place = serverData.place;
     form.value.comments = serverData.comments;
     form.value.participants = [...serverData.participants];
     
-    // Update original event type as well
+
     originalEventType.value = serverData.name;
     
-    // Reset flag after a short delay
+
     setTimeout(() => {
       isUpdatingFromWebSocket.value = false;
     }, 100);
@@ -724,7 +694,6 @@ const handleEventUpdate = (eventEntry: EventEntry) => {
 };
 
 const handleEventDelete = (eventEntry: EventEntry) => {
-  // If the event being edited was deleted, redirect to events list
   if (eventEntry._id === eventId.value) {
     showSnackbar('Event was deleted by another user', 'error');
     setTimeout(() => {
@@ -734,34 +703,28 @@ const handleEventDelete = (eventEntry: EventEntry) => {
 };
 
 const handlePersonUpdate = async () => {
-  // Refresh persons list when a person is updated or added
   await dataStore.fetchPersons();
 };
 
 const handleDummiesAdded = async (personIds: string[]) => {
-  // Refresh persons first to get the new dummies
   await dataStore.fetchPersons();
   
-  // Add the dummy persons to the current event's participants
   personIds.forEach(personId => {
     if (!form.value.participants.includes(personId)) {
       form.value.participants.push(personId);
     }
   });
   
-  // Save the updated event
   await handleSave();
 };
 
 const formatDateForInput = (dateString: string) => {
   if (!dateString) return '';
-  // Convert ISO date to YYYY-MM-DD format
   const date = new Date(dateString);
   return date.toISOString().split('T')[0];
 };
 
 onMounted(async () => {
-  // Fetch constants for event types
   try {
     const constants = await apiService.getConstants();
     eventTypes.value = constants.event_types;
@@ -770,12 +733,10 @@ onMounted(async () => {
     showSnackbar('Failed to load event types', 'error');
   }
   
-  // Ensure we have both persons and events data
   if (dataStore.persons.length === 0 || dataStore.events.length === 0) {
     await dataStore.fetchAll();
   }
   
-  // Load existing event data
   const existingEvent = dataStore.events.find(e => e._id === eventId.value);
   if (existingEvent) {
     form.value = { 
@@ -784,7 +745,7 @@ onMounted(async () => {
     };
     originalEventType.value = existingEvent.event.name;
   } else {
-    // If event not found in store, fetch all data
+
     await dataStore.fetchEvents();
     const event = dataStore.events.find(e => e._id === eventId.value);
     if (event) {
@@ -796,14 +757,12 @@ onMounted(async () => {
     }
   }
   
-  // Setup WebSocket listener for real-time updates
   websocketService.on('event:updated', handleEventUpdate);
   websocketService.on('event:deleted', handleEventDelete);
   websocketService.on('person:updated', handlePersonUpdate);
 });
 
 onUnmounted(() => {
-  // Remove WebSocket listener
   websocketService.off('event:updated', handleEventUpdate);
   websocketService.off('event:deleted', handleEventDelete);
   websocketService.off('person:updated', handlePersonUpdate);

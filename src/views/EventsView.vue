@@ -4,7 +4,7 @@
       <v-col cols="12" md="6">
         <v-text-field
           v-model="searchQuery"
-          label="Search events..."
+          label="Sueche..."
           prepend-inner-icon="mdi-magnify"
           variant="outlined"
           clearable
@@ -16,7 +16,7 @@
         <v-select
           v-model="sortBy"
           :items="sortOptions"
-          label="Sort by"
+          label="Sortiere"
           variant="outlined"
           density="comfortable"
           hide-details
@@ -28,7 +28,7 @@
           prepend-icon="mdi-plus"
           @click="$router.push({ name: 'event-add' })"
         >
-          Add New
+          Neue Event
         </v-btn>
       </v-col>
     </v-row>
@@ -128,9 +128,8 @@
 
     <v-row v-if="!initialLoading && filteredEvents.length === 0">
       <v-col cols="12" class="text-center">
-        <v-icon size="64" color="grey">mdi-calendar-blank</v-icon>
         <p class="text-h6 mt-4 text-medium-emphasis">
-          {{ searchQuery ? 'No events found matching your search' : 'No events found' }}
+          {{ searchQuery ? '🤷' : 'No events found' }}
         </p>
       </v-col>
     </v-row>
@@ -153,8 +152,8 @@ const infiniteScrollTrigger = ref<HTMLElement | null>(null);
 let observer: IntersectionObserver | null = null;
 
 const sortOptions = [
-  { title: 'Date (Newest First)', value: 'date-desc' },
-  { title: 'Date (Oldest First)', value: 'date-asc' },
+  { title: 'Datum (Neueste zersch)', value: 'date-desc' },
+  { title: 'Datum (Älteste zersch)', value: 'date-asc' },
   { title: 'Name (A-Z)', value: 'name-asc' },
   { title: 'Name (Z-A)', value: 'name-desc' },
 ];
@@ -162,7 +161,6 @@ const sortOptions = [
 const filteredEvents = computed(() => {
   let events = [...dataStore.events];
 
-  // Filter by search query
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     events = events.filter(eventEntry => {
@@ -182,7 +180,6 @@ const filteredEvents = computed(() => {
     });
   }
 
-  // Sort events
   events.sort((a, b) => {
     switch (sortBy.value) {
       case 'date-desc':
@@ -242,19 +239,15 @@ const setupInfiniteScroll = () => {
   
   observer.observe(infiniteScrollTrigger.value);
 };
-
-// Reset pagination when search or sort changes
 watch([searchQuery, sortBy], () => {
   currentPage.value = 1;
 });
 
 const handleEventUpdate = async () => {
-  // Refresh events when an event is updated or added
   await dataStore.fetchEvents();
 };
 
 const handleEventDelete = async () => {
-  // Refresh events when an event is deleted
   await dataStore.fetchEvents();
 };
 
@@ -263,11 +256,7 @@ onMounted(async () => {
     await dataStore.fetchEvents();
   }
   initialLoading.value = false;
-  
-  // Setup infinite scroll after initial load
   setTimeout(() => setupInfiniteScroll(), 100);
-  
-  // Setup WebSocket listeners for real-time updates
   websocketService.on('event:updated', handleEventUpdate);
   websocketService.on('event:deleted', handleEventDelete);
 });
@@ -277,7 +266,6 @@ onUnmounted(() => {
     observer.disconnect();
   }
   
-  // Remove WebSocket listeners
   websocketService.off('event:updated', handleEventUpdate);
   websocketService.off('event:deleted', handleEventDelete);
 });

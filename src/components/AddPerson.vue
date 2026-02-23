@@ -10,7 +10,6 @@
         <v-card>
           <v-card-title class="d-flex align-center" color="primary">
             <v-icon class="mr-2">mdi-account</v-icon>
-            Add New Person
             <v-spacer />
             <v-btn
               variant="text"
@@ -29,7 +28,7 @@
             >
               <div class="d-flex align-center justify-space-between">
                 <div>
-                  <strong>Possible Duplicate:</strong> A person with the same name and birthdate already exists:
+                  <strong>Chönt dopplet si</strong> Lüg mau dä:
                   <strong>{{ duplicatePerson.person.firstname }} {{ duplicatePerson.person.lastname }}</strong>
                   ({{ formatDate(duplicatePerson.person.birthdate) }})
                 </div>
@@ -42,7 +41,7 @@
                   target="_blank"
                   class="ml-4"
                 >
-                  View Person
+                  Zeig
                 </v-btn>
               </div>
             </v-alert>
@@ -52,7 +51,7 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.firstname"
-                    label="First Name"
+                    label="Vorname"
                     :rules="[rules.required]"
                     variant="outlined"
                     required
@@ -61,7 +60,7 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.lastname"
-                    label="Last Name"
+                    label="Nachname"
                     :rules="[rules.required]"
                     variant="outlined"
                     required
@@ -73,7 +72,7 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.birthdate"
-                    label="Birthdate"
+                    label="Geburtsdatum"
                     type="date"
                     variant="outlined"
                   />
@@ -81,7 +80,7 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.city"
-                    label="City"
+                    label="Stadt"
                     :rules="[rules.required]"
                     variant="outlined"
                     required
@@ -109,14 +108,14 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.phone"
-                    label="Phone"
+                    label="Telefonnummer"
                     variant="outlined"
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.emergency_phone"
-                    label="Emergency Phone"
+                    label="Notfalltelefonnummer"
                     variant="outlined"
                   />
                 </v-col>
@@ -126,7 +125,7 @@
                 <v-col cols="12">
                   <v-textarea
                     v-model="form.comments"
-                    label="Comments"
+                    label="Kommentare"
                     variant="outlined"
                     rows="3"
                   />
@@ -144,7 +143,7 @@
               :loading="loading"
               @click="handleSubmit"
             >
-              Add Person
+              Add
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -200,20 +199,17 @@ const form = ref<Person>({
 });
 
 const rules = {
-  required: (value: string) => !!value || 'This field is required'
+  required: (value: string) => !!value || 'Usfülle!😡'
 };
-
-// Duplicate person detection
 const duplicatePerson = ref<PersonEntry | null>(null);
 
 const normalizeDateForComparison = (dateString: string) => {
   if (!dateString) return '';
-  // Extract just the YYYY-MM-DD part
   return dateString.split('T')[0];
 };
 
 const checkForDuplicate = () => {
-  // Only check if we have all three fields
+
   if (!form.value.firstname || !form.value.lastname || !form.value.birthdate) {
     duplicatePerson.value = null;
     return;
@@ -223,35 +219,18 @@ const checkForDuplicate = () => {
   const lastnameLower = form.value.lastname.toLowerCase();
   const birthdate = form.value.birthdate;
 
-  console.log('Checking for duplicate:', { firstnameLower, lastnameLower, birthdate });
-  console.log('Persons in store:', dataStore.persons.length);
-
-  // Search in the data store for matching person
   const match = dataStore.persons.find(personEntry => {
     const storedBirthdate = normalizeDateForComparison(personEntry.person.birthdate);
     const matches = (
       personEntry.person.firstname.toLowerCase() === firstnameLower &&
       personEntry.person.lastname.toLowerCase() === lastnameLower &&
       storedBirthdate === birthdate
-    );
-    
-    if (matches) {
-      console.log('Found duplicate:', personEntry);
-    }
-    
+    );    
     return matches;
   });
 
   duplicatePerson.value = match || null;
-  
-  if (match) {
-    console.log('Duplicate person found:', match);
-  } else {
-    console.log('No duplicate found');
-  }
 };
-
-// Watch for changes in firstname, lastname, and birthdate
 watch(
   () => [form.value.firstname, form.value.lastname, form.value.birthdate],
   () => {
@@ -290,10 +269,10 @@ const handleSubmit = async () => {
     console.log(resp);
     showSnackbar(`Looks good💩`);
     
-    // Refresh the data store
+
     await dataStore.fetchPersons();
     
-    // If in dialog mode, emit event and return
+
     if (props.isDialog) {
       if (resp && resp.newID) {
         emit('person-added', resp.newID);
@@ -301,16 +280,16 @@ const handleSubmit = async () => {
       return;
     }
 
-    // Wait a bit for WebSocket to receive the new person
+
     await new Promise(resolve => setTimeout(resolve, 500));
     
     if (resp && resp.newID) {
-      // Navigate to edit mode with the new person ID
+  
       setTimeout(() => {
         router.push({ name: 'person-edit', params: { id: resp.newID } });
       }, 500);
     } else {
-      // Fallback to persons view if person not found
+  
       setTimeout(() => {
         router.push({ name: 'persons' });
       }, 800);
@@ -336,7 +315,6 @@ const handleBack = () => {
 };
 
 onMounted(async () => {
-  // Ensure persons data is loaded for duplicate checking
   if (dataStore.persons.length === 0) {
     await dataStore.fetchPersons();
   }
