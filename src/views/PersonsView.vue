@@ -32,6 +32,11 @@
         </v-btn>
       </v-col>
     </v-row>
+    <v-row v-else align="center" justify="center" class="mb-2">
+      <v-col cols="auto"><v-skeleton-loader type="button" width="150" height="40" /></v-col>
+      <v-col cols="auto"><v-skeleton-loader type="button" width="120" height="40" /></v-col>
+      <v-col cols="auto"><v-skeleton-loader type="button" width="120" height="40" /></v-col>
+    </v-row>
 
     <!-- Row 2: Search and Sort -->
     <v-row v-if="!initialLoading" align="center" class="mb-2">
@@ -56,6 +61,10 @@
           hide-details
         />
       </v-col>
+    </v-row>
+    <v-row v-else align="center" class="mb-2">
+       <v-col cols="12" md="8"><v-skeleton-loader type="text" height="56" class="rounded" /></v-col>
+       <v-col cols="12" md="4"><v-skeleton-loader type="text" height="56" class="rounded" /></v-col>
     </v-row>
 
     <!-- Export Dialog -->
@@ -114,8 +123,17 @@
     </v-dialog>
 
     <v-row v-if="initialLoading" class="mt-4">
-      <v-col cols="12" class="text-center">
-        <v-progress-circular indeterminate color="primary" size="64" />
+      <v-col
+        v-for="n in 8"
+        :key="n"
+        cols="12"
+        md="6"
+        lg="3"
+      >
+        <v-skeleton-loader
+          class="mx-auto border"
+          type="article"
+        ></v-skeleton-loader>
       </v-col>
     </v-row>
 

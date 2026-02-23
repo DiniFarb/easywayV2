@@ -1,6 +1,28 @@
 <template>
   <v-container>
-    <v-row>
+    <v-row v-if="dataStore.loading">
+      <v-col cols="12">
+        <v-card>
+          <v-card-title class="d-flex align-center">
+            <v-skeleton-loader type="heading" width="200" />
+            <v-spacer />
+            <v-skeleton-loader type="button" />
+          </v-card-title>
+          <v-card-text>
+            <v-skeleton-loader type="text" width="100%" class="mb-4" />
+            <v-row>
+              <v-col cols="12" md="6"><v-skeleton-loader type="text" /></v-col>
+              <v-col cols="12" md="6"><v-skeleton-loader type="text" /></v-col>
+            </v-row>
+            <v-row class="mt-4">
+              <v-col cols="12" md="6"><v-skeleton-loader type="card" height="300" /></v-col>
+              <v-col cols="12" md="6"><v-skeleton-loader type="card" height="300" /></v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+    <v-row v-else>
       <v-col cols="12">
         <v-card>
           <v-card-title class="d-flex align-center" color="primary">

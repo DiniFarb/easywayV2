@@ -59,9 +59,14 @@
             </v-row>
 
             <!-- Loading State -->
-            <v-row v-if="dataStore.loading">
-              <v-col cols="12" class="text-center">
-                <v-progress-circular indeterminate color="primary" />
+            <v-row v-if="dataStore.loading" class="mt-4">
+              <v-col cols="12" md="6" class="d-flex flex-column align-center">
+                <v-skeleton-loader type="heading" width="100" class="mb-2" />
+                <v-skeleton-loader type="text" width="80" />
+              </v-col>
+              <v-col cols="12" md="6" class="d-flex flex-column align-center">
+                <v-skeleton-loader type="heading" width="100" class="mb-2" />
+                <v-skeleton-loader type="text" width="80" />
               </v-col>
             </v-row>
 
@@ -76,12 +81,15 @@
       </v-col>
     </v-row>
 
-    <!-- Average Visitors per Month Chart -->
+    <!-- Average Visitors Card -->
     <v-row class="mt-4">
       <v-col cols="12">
         <v-card>
           <v-card-text>
-            <div v-if="!dataStore.loading && !dataStore.error && monthlyStats.length > 0">
+            <div v-if="dataStore.loading" class="d-flex justify-center align-center" style="height: 400px;">
+              <v-skeleton-loader type="image" width="100%" height="100%" />
+            </div>
+            <div v-else-if="!dataStore.loading && !dataStore.error && monthlyStats.length > 0">
               <div class="text-h6 text-center mb-4">Average Visitors per Month</div>
               <v-row>
                 <v-col cols="12" class="d-flex justify-center">
@@ -190,7 +198,10 @@
       <v-col cols="12" md="6">
         <v-card>
           <v-card-text>
-            <div v-if="!dataStore.loading && !dataStore.error && filteredPersonsCount > 0">
+            <div v-if="dataStore.loading" class="d-flex justify-center align-center" style="height: 300px;">
+              <v-skeleton-loader type="image" width="200" height="200" />
+            </div>
+            <div v-else-if="!dataStore.loading && !dataStore.error && filteredPersonsCount > 0">
               <div class="text-h6 text-center mb-4">Gender Pie</div>
               <v-row>
                 <v-col cols="12" md="6" class="d-flex justify-center">
@@ -229,7 +240,10 @@
       <v-col cols="12" md="6">
         <v-card>
           <v-card-text>
-            <div v-if="!dataStore.loading && !dataStore.error && filteredEventsCount > 0">
+            <div v-if="dataStore.loading" class="d-flex justify-center align-center" style="height: 300px;">
+              <v-skeleton-loader type="image" width="200" height="200" />
+            </div>
+            <div v-else-if="!dataStore.loading && !dataStore.error && filteredEventsCount > 0">
               <div class="text-h6 text-center mb-4">Participant Cities Distribution</div>
               <v-row>
                 <v-col cols="12" md="6" class="d-flex justify-center">

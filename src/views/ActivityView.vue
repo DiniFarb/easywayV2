@@ -21,7 +21,11 @@
       <v-divider></v-divider>
 
       <div class="flex-grow-1" style="overflow: hidden; position: relative;">
+        <div v-if="initialLoading" class="pa-4">
+          <v-skeleton-loader v-for="n in 15" :key="n" type="text" class="mb-4" />
+        </div>
         <v-infinite-scroll 
+          v-else
           height="100%" 
           :items="visibleActivities" 
           @load="loadMore"

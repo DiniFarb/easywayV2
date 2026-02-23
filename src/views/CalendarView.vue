@@ -35,7 +35,11 @@
           </v-card-title>
           <v-divider />
           <v-card-text>
+            <div v-if="dataStore.loading" style="height: 600px;">
+               <v-skeleton-loader type="image" width="100%" height="100%" />
+            </div>
             <v-calendar
+              v-else
               v-model="selectedDate"
               :events="calendarEvents"
               :weekdays="[1, 2, 3, 4, 5, 6, 0]"

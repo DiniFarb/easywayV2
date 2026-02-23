@@ -1,6 +1,11 @@
 <template>
   <v-container>
-    <v-row>
+    <v-row v-if="dataStore.loading">
+       <v-col cols="12">
+         <v-skeleton-loader type="card" height="400" />
+       </v-col>
+    </v-row>
+    <v-row v-else>
       <v-col cols="12">
         <v-card>
           <v-card-title class="d-flex align-center" color="primary">

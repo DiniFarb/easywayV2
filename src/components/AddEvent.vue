@@ -1,6 +1,11 @@
 <template>
   <v-container>
-    <v-row>
+    <v-row v-if="initialLoading">
+      <v-col cols="12">
+        <v-skeleton-loader type="card" height="400" />
+      </v-col>
+    </v-row>
+    <v-row v-else>
       <v-col cols="12">
         <v-card>
           <v-card-title class="d-flex align-center" color="primary">
@@ -101,6 +106,7 @@ const dataStore = useDataStore();
 
 const formValid = ref(false);
 const loading = ref(false);
+const initialLoading = ref(true);
 const eventTypes = ref<string[]>([]);
 const snackbar = ref({
   show: false,
@@ -176,6 +182,8 @@ onMounted(async () => {
   } catch (error) {
     console.error('Error fetching constants:', error);
     showSnackbar('Failed to load event types', 'error');
+  } finally {
+    initialLoading.value = false;
   }
 });
 </script>

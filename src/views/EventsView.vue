@@ -32,10 +32,30 @@
         </v-btn>
       </v-col>
     </v-row>
+    <v-row v-else class="mb-2">
+      <v-col cols="12" md="6">
+        <v-skeleton-loader type="text" height="56" class="rounded" />
+      </v-col>
+      <v-col cols="12" md="4">
+        <v-skeleton-loader type="text" height="56" class="rounded" />
+      </v-col>
+      <v-col cols="12" md="2">
+        <v-skeleton-loader type="button" height="56" width="100%" class="rounded" />
+      </v-col>
+    </v-row>
 
     <v-row v-if="initialLoading" class="mt-4">
-      <v-col cols="12" class="text-center">
-        <v-progress-circular indeterminate color="primary" size="64" />
+      <v-col
+        v-for="n in 6"
+        :key="n"
+        cols="12"
+        md="6"
+        lg="4"
+      >
+        <v-skeleton-loader
+          elevation="2"
+          type="article"
+        ></v-skeleton-loader>
       </v-col>
     </v-row>
 
