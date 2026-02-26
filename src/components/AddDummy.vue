@@ -36,9 +36,9 @@
                 divided
                 variant="outlined"
               >
-                <v-btn value="M" icon="mdi-gender-male" size="x-large" class="px-6" title="Male"></v-btn>
-                <v-btn value="W" icon="mdi-gender-female" size="x-large" class="px-6" title="Female"></v-btn>
-                <v-btn value="O" icon="mdi-gender-male-female" size="x-large" class="px-6" title="Other"></v-btn>
+                <v-btn value="M" icon="mdi-face-man" size="x-large" class="px-6" title="Male"></v-btn>
+                <v-btn value="W" icon="mdi-face-woman" size="x-large" class="px-6" title="Female"></v-btn>
+                <v-btn value="O" icon="mdi-face-man-shimmer" size="x-large" class="px-6" title="Other"></v-btn>
               </v-btn-toggle>
             </v-col>
           </v-row>
@@ -47,7 +47,7 @@
             <v-col cols="12">
               <v-text-field
                 v-model.number="form.age"
-                label="Age"
+                label="Alter"
                 type="number"
                 min="0"
                 max="120"
@@ -60,9 +60,10 @@
           
           <v-row>
             <v-col cols="12">
-              <v-text-field
+              <v-combobox
                 v-model="form.place"
-                label="Place"
+                label="Stadt"
+                :items="relevantCities"
                 :rules="[rules.required]"
                 variant="outlined"
                 required
@@ -96,10 +97,14 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+  
+  <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="snackbar.timeout">
+    {{ snackbar.text }}
+  </v-snackbar>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { apiService } from '@/services/apiService';
 
 interface Props {
@@ -118,6 +123,25 @@ const emit = defineEmits<Emits>();
 const isOpen = ref(props.modelValue);
 const formValid = ref(false);
 const loading = ref(false);
+const snackbar = ref({
+  show: false,
+  text: '',
+  color: 'success',
+  timeout: 3000
+});
+
+const relevantCities = ref<string[]>([]);
+
+onMounted(async () => {
+  try {
+    const constants = await apiService.getConstants();
+    if (constants.relevant_cities) {
+      relevantCities.value = constants.relevant_cities.filter(city => city !== 'Andere');
+    }
+  } catch (error) {
+    console.error('Failed to fetch relevant cities:', error);
+  }
+});
 
 const form = ref({
   amount: 1,
@@ -150,37 +174,63 @@ const calculateBirthdate = (age: number): string => {
 const handleAdd = async () => {
   if (!formValid.value) return;
   
-  loading.value = true;
+  const formCopy = { ...form.value };
+  handleCancel();
+  
+  snackbar.value = { 
+    show: true, 
+    text: `Adding ${formCopy.amount} 👻...`, 
+    color: 'info',
+    timeout: -1 
+  };
+  
   const createdPersonIds: string[] = [];
   
   try {
-    for (let i = 0; i < form.value.amount; i++) {
-      const birthdate = calculateBirthdate(form.value.age);
+    for (let i = 0; i < formCopy.amount; i++) {
+      const birthdate = calculateBirthdate(formCopy.age);
       
       const dummyPerson = {
         firstname: '#DUMMY',
         lastname: '#DUMMY',
         birthdate: birthdate,
-        gender: form.value.gender,
-        city: form.value.place,
+        gender: formCopy.gender,
+        city: formCopy.place,
         phone: '',
         emergency_phone: '',
-        comments: form.value.comments || ''
+        comments: formCopy.comments || ''
       };
       
       const personEntry = await apiService.addPerson(dummyPerson);
       if (personEntry && personEntry.newID) {
         createdPersonIds.push(personEntry.newID);
       }
+      
+      if (i < formCopy.amount - 1) {
+        snackbar.value = { 
+          show: true, 
+          text: `${i + 1} / ${formCopy.amount} 👻 drinne`, 
+          color: 'info',
+          timeout: -1 
+        };
+      }
     }
     
     emit('dummiesAdded', createdPersonIds);
-    handleCancel();
+    snackbar.value = { 
+      show: true, 
+      text: `${formCopy.amount} 👻 drinne! looks good 💩`, 
+      color: 'success',
+      timeout: 3000
+    };
   } catch (error) {
     console.error('Failed to create dummy persons:', error);
-    alert('Failed to create dummy persons. Please try again.');
-  } finally {
-    loading.value = false;
+    snackbar.value = { 
+      show: true, 
+      text: 'Failed to create dummy persons.', 
+      color: 'error',
+      timeout: 3000
+    };
   }
 };
 
@@ -188,7 +238,7 @@ const handleCancel = () => {
   form.value = {
     amount: 1,
     gender: 'M',
-    age: 18,
+    age: 12,
     place: '',
     comments: ''
   };

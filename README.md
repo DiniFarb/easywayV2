@@ -1,3 +1,4 @@
 # TODO
 
-- dashboard view, work on the line chart
+- change loading on dummies
+- 

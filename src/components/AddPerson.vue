@@ -78,9 +78,10 @@
                   />
                 </v-col>
                 <v-col cols="12" md="6">
-                  <v-text-field
+                  <v-combobox
                     v-model="form.city"
                     label="Stadt"
+                    :items="relevantCities"
                     :rules="[rules.required]"
                     variant="outlined"
                     required
@@ -97,9 +98,9 @@
                     divided
                     variant="outlined"
                   >
-                    <v-btn value="M" icon="mdi-gender-male" size="x-large" class="px-6" title="Male"></v-btn>
-                    <v-btn value="W" icon="mdi-gender-female" size="x-large" class="px-6" title="Female"></v-btn>
-                    <v-btn value="O" icon="mdi-gender-male-female" size="x-large" class="px-6" title="Other"></v-btn>
+                    <v-btn value="M" icon="mdi-face-man" size="x-large" class="px-6" title="Male"></v-btn>
+                    <v-btn value="W" icon="mdi-face-woman" size="x-large" class="px-6" title="Female"></v-btn>
+                    <v-btn value="O" icon="mdi-face-man-shimmer" size="x-large" class="px-6" title="Other"></v-btn>
                   </v-btn-toggle>
                 </v-col>
               </v-row>
@@ -178,6 +179,19 @@ const emit = defineEmits<{
 
 const router = useRouter();
 const dataStore = useDataStore();
+
+const relevantCities = ref<string[]>([]);
+
+onMounted(async () => {
+  try {
+    const constants = await apiService.getConstants();
+    if (constants.relevant_cities) {
+      relevantCities.value = constants.relevant_cities.filter(city => city !== 'Andere');
+    }
+  } catch (error) {
+    console.error('Failed to fetch relevant cities:', error);
+  }
+});
 
 const formValid = ref(false);
 const loading = ref(false);

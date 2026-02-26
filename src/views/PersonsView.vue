@@ -363,11 +363,11 @@ const getEventCount = (personId: string) => {
 const getGenderIcon = (gender: string) => {
   switch (gender?.toLowerCase()) {
     case 'm':
-      return 'mdi-gender-male';
+      return 'mdi-face-man';
     case 'w':
-      return 'mdi-gender-female';
+      return 'mdi-face-woman';
     default:
-      return 'mdi-gender-male-female';
+      return 'mdi-face-man-shimmer';
   }
 };
 

@@ -19,7 +19,7 @@ const props = defineProps<{
 }>();
 
 const series = computed(() => [{
-  name: "⌀ Bsuecher",
+  name: "Bsuecher",
   data: props.data.map(item => item.avgVisitors)
 }]);
 

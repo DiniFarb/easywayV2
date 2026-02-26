@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-row v-if="dataStore.loading">
+    <v-row v-if="loading">
       <v-col cols="12">
         <v-card>
           <v-card-title class="d-flex align-center">
@@ -35,7 +35,7 @@
             />
           </v-card-title>
           <v-card-text>
-            <v-form v-model="formValid" @submit.prevent="handleSave">
+            <v-form v-model="formValid" @submit.prevent="handleSave()">
               <v-row>
                 <v-col cols="12">
                   <v-select
@@ -64,7 +64,7 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="form.place"
-                    label="Ort"
+                    label="Place to be"
                     :rules="[rules.required]"
                     variant="outlined"
                     required
@@ -517,14 +517,14 @@ const getGenderIcon = (gender: string) => {
     case 'm':
     case 'male':
     case 'männlich':
-      return 'mdi-gender-male';
+      return 'mdi-face-man';
     case 'w':
     case 'f':
     case 'female':
     case 'weiblich':
-      return 'mdi-gender-female';
+      return 'mdi-face-woman';
     default:
-      return 'mdi-gender-male-female';
+      return 'mdi-face-man-shimmer';
   }
 };
 
@@ -563,10 +563,12 @@ const autoSave = async () => {
   }
 };
 
-const handleSave = async () => {
+const handleSave = async (showLoading: boolean = true) => {
   if (!formValid.value) return;
   
-  loading.value = true;
+  if (showLoading) {
+    loading.value = true;
+  }
   
   try {
     await apiService.updateEvent(eventId.value, form.value);
@@ -715,7 +717,7 @@ const handleDummiesAdded = async (personIds: string[]) => {
     }
   });
   
-  await handleSave();
+  await handleSave(false);
 };
 
 const formatDateForInput = (dateString: string) => {
