@@ -18,11 +18,27 @@
         </div>
       </v-card-title>
       
-      <v-card-subtitle class="pb-2">
-        <span class="mr-4">➕ {{ activityCounts['CREATE'] || 0 }}</span>
-        <span class="mr-4">✏️ {{ activityCounts['UPDATE'] || 0 }}</span>
-        <span class="mr-4">🗑️ {{ activityCounts['DELETE'] || 0 }}</span>
-        <span class="mr-4">📝 {{ activityCounts['LOGIN'] || 0 }}</span>
+      <v-card-subtitle class="d-flex align-center py-1">
+        <span
+          class="mr-4 type-filter-chip"
+          :class="{ 'type-filter-active': activeTypeFilter === 'CREATE' }"
+          @click="toggleTypeFilter('CREATE')"
+        >➕ {{ activityCounts['CREATE'] || 0 }}</span>
+        <span
+          class="mr-4 type-filter-chip"
+          :class="{ 'type-filter-active': activeTypeFilter === 'UPDATE' }"
+          @click="toggleTypeFilter('UPDATE')"
+        >✏️ {{ activityCounts['UPDATE'] || 0 }}</span>
+        <span
+          class="mr-4 type-filter-chip"
+          :class="{ 'type-filter-active': activeTypeFilter === 'DELETE' }"
+          @click="toggleTypeFilter('DELETE')"
+        >🗑️ {{ activityCounts['DELETE'] || 0 }}</span>
+        <span
+          class="mr-4 type-filter-chip"
+          :class="{ 'type-filter-active': activeTypeFilter === 'LOGIN' }"
+          @click="toggleTypeFilter('LOGIN')"
+        >📝 {{ activityCounts['LOGIN'] || 0 }}</span>
       </v-card-subtitle>
       
       <v-divider></v-divider>
@@ -129,6 +145,7 @@ import * as Diff from 'diff';
 const allActivities = ref<ActivityLogEntry[]>([]);
 const visibleActivities = ref<ActivityLogEntry[]>([]);
 const search = ref('');
+const activeTypeFilter = ref<string | null>(null);
 const initialLoading = ref(false);
 const dialog = ref(false);
 const selectedItem = ref<ActivityLogEntry | null>(null);
@@ -169,10 +186,15 @@ const isDelete = computed(() => {
 });
 
 const filteredActivities = computed(() => {
-  if (!search.value) return allActivities.value;
+  let items = allActivities.value;
+  if (activeTypeFilter.value) {
+    const typeUpper = activeTypeFilter.value;
+    items = items.filter(item => item.type.toUpperCase() === typeUpper);
+  }
+  if (!search.value) return items;
   const searchLower = search.value.toLowerCase();
-  return allActivities.value.filter(item => 
-    Object.values(item).some(val => 
+  return items.filter(item =>
+    Object.values(item).some(val =>
       String(val).toLowerCase().includes(searchLower)
     )
   );
@@ -293,14 +315,17 @@ async function loadMore({ done }: { done: (status: 'ok' | 'empty' | 'error') => 
   done('ok');
 }
 
-// Reset list when search changes
-watch(search, () => {
-  visibleActivities.value = [];
-  // We need to trigger a load, but typically v-infinite-scroll does this if the list becomes empty or short.
-  // Manually adding first batch to ensure immediate feedback
-  const firstBatch = filteredActivities.value.slice(0, PAGE_SIZE);
-  visibleActivities.value = firstBatch;
-});
+function resetVisibleList() {
+  visibleActivities.value = filteredActivities.value.slice(0, PAGE_SIZE);
+}
+
+// Reset list when search or type filter changes
+watch(search, resetVisibleList);
+watch(activeTypeFilter, resetVisibleList);
+
+function toggleTypeFilter(type: string) {
+  activeTypeFilter.value = activeTypeFilter.value === type ? null : type;
+}
 
 function openDetails(item: ActivityLogEntry) {
   selectedItem.value = item;
@@ -377,6 +402,24 @@ onMounted(() => {
   padding: 2px 8px;
   white-space: pre-wrap;
   word-break: break-all;
+}
+
+.type-filter-chip {
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 12px;
+  user-select: none;
+  transition: background-color 0.15s;
+}
+
+.type-filter-chip:hover {
+  background-color: rgba(var(--v-theme-on-surface), 0.08);
+}
+
+.type-filter-active {
+  background-color: rgba(var(--v-theme-primary), 0.2);
+  outline: 1px solid rgb(var(--v-theme-primary));
+  font-weight: 600;
 }
 
 .diff-marker {

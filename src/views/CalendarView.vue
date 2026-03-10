@@ -102,7 +102,7 @@ const calendarEvents = computed(() => {
 });
 
 const handleEventClick = (clickEvent: Event, eventData: any) => {
-  router.push({ name: 'event-edit', params: { id: eventData.event.id } });
+  router.push({ name: 'event-edit', params: { id: eventData.event.id }, query: { returnTo: 'calendar' } });
 };
 
 onMounted(async () => {

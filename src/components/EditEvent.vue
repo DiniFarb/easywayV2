@@ -115,7 +115,7 @@
                             <th class="text-left">Name</th>
                             <th class="text-left">Birthday</th>
                             <th class="text-left">Place</th>
-                            <th class="text-left" style="width: 60px;"></th>
+                            <th class="text-right" style="width: 100px;">Aktionen</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -128,7 +128,16 @@
                             <td>{{ participant.fullName }}</td>
                             <td>{{ participant.birthdate ? formatDate(participant.birthdate) : 'N/A' }}</td>
                             <td>{{ participant.city || 'N/A' }}</td>
-                            <td>
+                            <td class="text-right text-no-wrap" style="width: 100px;">
+                              <v-btn
+                                icon="mdi-pencil"
+                                size="small"
+                                variant="text"
+                                color="grey-darken-1"
+                                class="mr-1"
+                                @click="editPerson(participant.id)"
+                                title="Edit Lappe"
+                              />
                               <v-btn
                                 icon="mdi-minus-circle"
                                 size="small"
@@ -412,6 +421,7 @@ const addPersonDialog = ref(false);
 const addDummyDialog = ref(false);
 const originalEventType = ref('');
 const isRevertingEventType = ref(false);
+const lastSavedForm = ref('');
 const snackbar = ref({
   show: false,
   text: '',
@@ -554,9 +564,12 @@ const handleNewPersonAdded = (newId: string) => {
 
 const autoSave = async () => {
   if (!formValid.value || isUpdatingFromWebSocket.value) return;
+  const snapshot = JSON.stringify(form.value);
+  if (snapshot === lastSavedForm.value) return;
   
   try {
     await apiService.updateEvent(eventId.value, form.value);
+    lastSavedForm.value = snapshot;
   } catch (error) {
     console.error('Auto-save failed:', error);
     showSnackbar('Auto-save failed', 'error');
@@ -599,6 +612,7 @@ const cancelEventTypeChange = () => {
 const confirmEventTypeChange = async () => {
   eventTypeChangeDialog.value = false;
   originalEventType.value = form.value.name;
+  await autoSave();
 };
 
 const handleBack = async () => {
@@ -610,7 +624,12 @@ const handleBack = async () => {
       console.error('Error saving before back:', error);
     }
   }
-  router.push({ name: 'events' });
+  const returnTo = route.query.returnTo as string;
+  if (returnTo === 'calendar') {
+    router.push({ name: 'calendar' });
+  } else {
+    router.push({ name: 'events' });
+  }
 };
 
 const editPerson = (personId: string) => {
@@ -746,6 +765,7 @@ onMounted(async () => {
       eventDate: formatDateForInput(existingEvent.event.eventDate)
     };
     originalEventType.value = existingEvent.event.name;
+    lastSavedForm.value = JSON.stringify(form.value);
   } else {
 
     await dataStore.fetchEvents();
@@ -756,6 +776,7 @@ onMounted(async () => {
         eventDate: formatDateForInput(event.event.eventDate)
       };
       originalEventType.value = event.event.name;
+      lastSavedForm.value = JSON.stringify(form.value);
     }
   }
   

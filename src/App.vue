@@ -139,7 +139,7 @@ onUnmounted(() => {
         <v-icon>{{ theme.global.current.value.dark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
       </v-btn>
 
-      <v-btn v-if="isAuthenticated" icon @click="handleLogout">
+      <v-btn icon @click="handleLogout">
         <v-icon>mdi-logout</v-icon>
       </v-btn>
     </v-app-bar>
