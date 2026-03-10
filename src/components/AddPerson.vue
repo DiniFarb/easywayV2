@@ -217,36 +217,27 @@ const rules = {
 };
 const duplicatePerson = ref<PersonEntry | null>(null);
 
-const normalizeDateForComparison = (dateString: string) => {
-  if (!dateString) return '';
-  return dateString.split('T')[0];
-};
-
 const checkForDuplicate = () => {
 
-  if (!form.value.firstname || !form.value.lastname || !form.value.birthdate) {
+  if (!form.value.firstname || !form.value.lastname) {
     duplicatePerson.value = null;
     return;
   }
 
   const firstnameLower = form.value.firstname.toLowerCase();
   const lastnameLower = form.value.lastname.toLowerCase();
-  const birthdate = form.value.birthdate;
 
   const match = dataStore.persons.find(personEntry => {
-    const storedBirthdate = normalizeDateForComparison(personEntry.person.birthdate);
-    const matches = (
+    return (
       personEntry.person.firstname.toLowerCase() === firstnameLower &&
-      personEntry.person.lastname.toLowerCase() === lastnameLower &&
-      storedBirthdate === birthdate
-    );    
-    return matches;
+      personEntry.person.lastname.toLowerCase() === lastnameLower
+    );
   });
 
   duplicatePerson.value = match || null;
 };
 watch(
-  () => [form.value.firstname, form.value.lastname, form.value.birthdate],
+  () => [form.value.firstname, form.value.lastname],
   () => {
     checkForDuplicate();
   },
